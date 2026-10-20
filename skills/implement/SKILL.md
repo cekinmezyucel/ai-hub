@@ -53,6 +53,13 @@ One of:
   `blocked` when the plan is wrong.
 - The caller sets the turn cap and the loop cap. Stop when you reach them and report honestly (P-14).
 
+## Done when
+
+- Every task (or feedback item) is committed, or the report says why not.
+- Every new test failed before its code existed.
+- The plan's test and lint commands ran on the last commit, and the report quotes their result.
+- The branch is pushed and the report is posted.
+
 ## Report
 
 ```markdown

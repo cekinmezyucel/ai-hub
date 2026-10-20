@@ -45,6 +45,13 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
 - Quote real output. Never shorten an error into something it did not say.
 - No secrets in the report (P-6). Mask anything that looks like a token in quoted output.
 
+## Done when
+
+- Every command in the plan ran, and its exit code is in the report.
+- Every `AC-n` has a result and evidence (unless a command failed first).
+- On `fail`, every feedback item names an `AC-n` or a command.
+- The report is posted.
+
 ## Report
 
 ```markdown

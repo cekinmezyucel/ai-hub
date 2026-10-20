@@ -28,7 +28,7 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
    - The test, lint and run commands. Look in CI workflows first, then `Makefile`,
      `pyproject.toml`, `package.json`, `CLAUDE.md` / `AGENTS.md`, `README`.
 4. Write `plan.md` with the template below.
-5. Run the self-check. Fix the plan until it passes.
+5. Check the "Done when" list. Fix the plan until every item is true.
 6. Commit (`plan: <feature key>`) and push.
 7. Post the report: `gh issue comment <issue> --body-file <file>`.
 
@@ -81,7 +81,7 @@ Feature: <feature key> · Spec: ./spec.md · Risk: low | medium | high — <one-
 - …
 ```
 
-## Self-check
+## Done when
 
 - Every `AC-n` in the spec is in the traceability table with at least one task and one test.
 - Every task covers at least one `AC-n`, or names the principle that needs it.

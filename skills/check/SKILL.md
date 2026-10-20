@@ -41,6 +41,12 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
   `fail` when any checked `AC-n` fails: a human decides on rollback or a new feature.
   `blocked` when the service cannot be reached or the base URL is unknown.
 
+## Done when
+
+- Every `AC-n` is `pass`, `fail` or `not checked`, with evidence or a reason.
+- All test data you created is deleted.
+- The report is posted.
+
 ## Report
 
 ```markdown

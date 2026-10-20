@@ -30,7 +30,7 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
    at most 5 questions, most important first. Offer a default answer for each.
    Skip what you can read from the repo or the input.
 5. Draft the PRD with the template. Write anything still unknown as an open question.
-6. Run the self-check. Show the draft to the human and apply their changes.
+6. Check the "Done when" list. Show the draft to the human and apply their changes.
 7. Only after the human says OK: `gh issue create --title "<title>" --body-file <file>`.
    Add the label `prd` if the repo has it.
 8. Reply with the Issue URL.
@@ -83,7 +83,7 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
 The marker has no `feature=` yet: the Issue number does not exist until the Issue is created.
 `spec` sets the feature key.
 
-## Self-check
+## Done when
 
 - Every requirement has at least one acceptance criterion.
 - Every acceptance criterion could be checked without reading the code.

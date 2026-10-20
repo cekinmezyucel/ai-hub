@@ -37,6 +37,8 @@ A `fail` from `verify` or `review` goes back to `implement`.
 | **report** | The one comment each step posts when it ends. Starts with a marker. |
 | **marker** | First line of every report: `<!-- ai-hub step=<step> feature=<feature key> verdict=<verdict> -->`. Lets the pipeline read the result. |
 | **verdict** | The result of a step: `pass` (next step may run), `fail` (go back to `implement`), `blocked` (a human must answer first). |
+| **done when** | The list at the end of each skill, and in each task of `plan.md`. Every item must be true before the step posts its report. |
+| **done** | A step is done when its "Done when" list is true and its report is posted; the verdict then says what comes next. A feature is done when `check` posts `pass` on the PRD Issue. |
 | **gate** | A point where a human must approve before the next step. Removed only by evidence (README principle 7). |
 | **loop** | `implement` → `verify` (→ `review`) and back on `fail`. The pipeline caps the number of loops. |
 | **risk** | `low`, `medium` or `high`. Set by `plan`. Gates use it. |

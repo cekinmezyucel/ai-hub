@@ -29,7 +29,7 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
    and the existing behaviour the PRD touches. Do not design the implementation.
 5. Create or switch to the feature branch.
 6. Write `spec.md` with the template below.
-7. Run the self-check. Fix the spec until it passes.
+7. Check the "Done when" list. Fix the spec until every item is true.
 8. Commit (`spec: <feature key>`) and push the feature branch.
 9. Post the report: `gh issue comment <issue> --body-file <file>`.
 
@@ -81,7 +81,7 @@ Feature: <feature key> · PRD: #<issue> · Verdict: pass | blocked
 - **Q-1** (blocking | non-blocking) …
 ```
 
-## Self-check
+## Done when
 
 - Every requirement in the PRD maps to at least one `AC-n` or to "Out".
 - Every `AC-n` could be checked by a test without reading the code.

@@ -50,6 +50,13 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
 - **Verdict:** `fail` if any `blocker` or `major`, else `pass`.
 - Use a PR comment, not `gh pr review`: GitHub does not allow approving your own PR.
 
+## Done when
+
+- Every changed file was read, with the code around each hunk.
+- Every finding has a severity, a `file:line` and a failure scenario.
+- The verdict follows the severity rule.
+- The report is posted.
+
 ## Report
 
 ```markdown
