@@ -1,11 +1,14 @@
 # ai-hub
 
-> From PRD to production with AI agents: reusable skills, human gates, verified output.
+> From PRD to production with AI agents: reusable skills, human gates if necessary, verified output.
 
 ## Goal
 
 Take a feature from a written PRD to a deployed and verified service, A to Z.
-AI agents do the steps where they help. A human makes the decisions.
+AI agents do the steps where they help.
+
+**North star: no human bottleneck.** A human gate stays only where it is necessary.
+When the evidence shows a step is safe without a human, the gate goes.
 
 Built in the open and from scratch, to show how an AI-driven SDLC works in practice:
 specs, agents, evals, MCP and sandboxing.
@@ -13,14 +16,14 @@ specs, agents, evals, MCP and sandboxing.
 ## How it works
 
 **Pattern:** a workflow on the outside, one agent on the inside.
-Only the coding step is agentic. Everything else is a fixed step with a human gate.
+Only the coding step is agentic. Everything else is a fixed step. Gates start closed and open as trust grows.
 
 ```
-1. PRD          a human writes it                 [gate: approve]
-2. Plan         LLM: PRD -> spec + tasks          [gate: approve]
+1. PRD          a human writes it                 [gate if necessary]
+2. Plan         LLM: PRD -> spec + tasks          [gate if necessary]
 3. Code         agent in a sandbox                <- the only agent
 4. Verify       tests + LLM judge vs PRD criteria -> back to 3 (max N loops)
-5. PR           a human reviews and merges        [gate]
+5. PR           review and merge                  [gate if necessary]
 6. Deploy       normal CI/CD, no AI
 7. Prod check   smoke test vs acceptance criteria
 ```
@@ -74,7 +77,9 @@ Who calls them:
    ([Demystifying evals](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents))
 6. **No secrets in this repo.** No key files (OIDC), GitHub push protection, a secret scan in CI, a local hook.
    A pushed secret counts as leaked: rotate first.
-7. **Token economy.** Tests on every run, the LLM judge only after tests pass, the full eval suite only when prompts, model,
+7. **Human gates only where necessary.** A gate is removed by evidence, not by hope: the verify step passes,
+   the eval suite shows the step is consistent (pass^k), and the change is low risk. Every skipped gate stays visible in the log.
+8. **Token economy.** Tests on every run, the LLM judge only after tests pass, the full eval suite only when prompts, model,
    harness or tools change. Every run has a turn cap.
 
 ## Stack
