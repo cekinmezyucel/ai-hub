@@ -1,0 +1,14 @@
+{
+  "name": "ai-hub",
+  "description": "ai-hub: from PRD to production with AI agents.",
+  "owner": {
+    "name": "Yucel Cekinmez"
+  },
+  "plugins": [
+    {
+      "name": "ai-hub",
+      "source": "./",
+      "description": "App-agnostic SDLC skills: prd -> spec -> plan -> implement -> verify -> review -> (deploy) -> check."
+    }
+  ]
+}

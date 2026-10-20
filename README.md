@@ -59,10 +59,18 @@ Who calls them:
   v2  own harness (Agent SDK)       same skills, loaded from files
 ```
 
-v0, by hand: this repo is a Claude Code plugin. Start Claude Code in the target repo with it:
+v0, by hand: this repo is a Claude Code plugin and its own marketplace. Install it once:
 
 ```
-claude --plugin-dir <path-to-ai-hub>
+/plugin install ai-hub --marketplace cekinmezyucel/ai-hub
+```
+
+Update after a push with `claude plugin update ai-hub@ai-hub`.
+While editing the skills, use the live copy instead: `claude --plugin-dir <path-to-ai-hub>`.
+
+Then, in the target repo:
+
+```
 /ai-hub:prd <idea>       # opens PRD Issue #12
 /ai-hub:spec 12          # feature key 12-<slug>, branch feature/12-<slug>
 /ai-hub:plan 12
