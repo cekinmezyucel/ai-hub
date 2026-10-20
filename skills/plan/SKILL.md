@@ -39,6 +39,8 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
 - **Small tasks (P-13).** One task = one sitting, leaves the repo green, could ship alone.
   Prefer vertical slices (one behaviour end to end) over layers (all models, then all routes).
 - **Test first (P-3).** Each task names the test that is written first and what it asserts.
+- **Smoke checks.** If the repo has smoke checks that run against production (for example `smoke/`),
+  each `AC-n` that is safe to check live gets one, following the repo's naming rule. `check` reads them.
 - **Copy existing patterns (P-4).** For each new file, name the existing file whose pattern it follows.
 - **No scope creep (P-2).** No task outside the spec. Refactor only when a task needs it, and say why.
 - **Risk:**

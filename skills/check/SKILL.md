@@ -1,6 +1,6 @@
 ---
 name: check
-description: Step 8 of ai-hub. After deploy, run safe smoke checks against the running service for each acceptance criterion in spec.md, and post a pass/fail check report on the PRD Issue. Use when given a feature key or PRD Issue number to check in production.
+description: Step 8 of ai-hub. After deploy, check each acceptance criterion in spec.md against the running service - with safe live requests, or by reading the smoke check job when the service runs inside CI - and post a pass/fail check report on the PRD Issue. Use when given a feature key or PRD Issue number to check in production.
 ---
 
 # check: running service + spec.md → check report
@@ -13,8 +13,11 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
 ## Input
 
 - The feature key or the PRD Issue number.
-- The base URL of the running service. If not given, look in `README`, `CLAUDE.md` / `AGENTS.md`
-  and the deploy workflow. Not found ⇒ verdict `blocked`.
+- Where production is. Look in `README`, `CLAUDE.md` / `AGENTS.md` and the deploy workflow. One of:
+  - **Hosted:** the base URL of the running service.
+  - **In CI:** the service runs only inside a CI job that starts it and runs smoke checks against it.
+    You need the workflow and job name.
+  - Not found ⇒ verdict `blocked`.
 
 ## Output
 
@@ -24,10 +27,16 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
 
 1. Read `../../docs/engineering-principles.md`. Cite principles by ID.
 2. Read `spec.md` from the feature folder on the default branch (the feature is merged).
-3. Confirm the deployed version contains the merge: use a version or health endpoint if the service has one.
-   If you cannot confirm it, say so in the report.
-4. For each `AC-n`, decide if it is safe to check live (see rules). If yes, run the smallest request
-   that shows the **Then** part, and record the request and the response lines that matter.
+3. Confirm production runs the merge:
+   - Hosted: use a version or health endpoint if the service has one.
+   - In CI: find the run of the production job for the merge commit
+     (`gh run list --workflow <file> --commit <full sha>`). It must be `completed`.
+   - If you cannot confirm it, say so in the report.
+4. Check each `AC-n`:
+   - Hosted: decide if it is safe to check live (see rules). If yes, run the smallest request
+     that shows the **Then** part, and record the request and the response lines that matter.
+   - In CI: read the smoke check log (`gh run view <run id> --log --job <job id>`). Find the smoke test
+     for this `AC-n` by the repo's naming rule, and record its name and result. No smoke test ⇒ `not checked`.
 5. Post the report: `gh issue comment <issue> --body-file <file>`.
 
 ## Rules
@@ -36,10 +45,13 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
   Write requests only when `spec.md` or `plan.md` names safe test data; delete what you created.
 - No load tests. No real user data. No guessing endpoints that are not in the contract.
 - Credentials come from the environment. Never print them (P-6).
-- An `AC-n` that is not safe to check live is `not checked`, with the reason. It does not fail the check.
+- An `AC-n` that is not safe to check live, or has no smoke test, is `not checked`, with the reason.
+  It does not fail the check.
+- In CI, a smoke test counts only if it ran against the started service in the production job.
+  Unit test results are `verify` evidence, not `check` evidence.
 - **Verdict:** `pass` when every checked `AC-n` passes and at least one was checked.
   `fail` when any checked `AC-n` fails: a human decides on rollback or a new feature.
-  `blocked` when the service cannot be reached or the base URL is unknown.
+  `blocked` when the service cannot be reached, production is unknown, or the production job did not run.
 
 ## Done when
 
@@ -53,10 +65,11 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
 <!-- ai-hub step=check feature=<feature key> verdict=pass|fail|blocked -->
 ## check · pass | fail | blocked
 
-Service: <base URL> · Version: <version, or "not confirmed">
+Service: <base URL, or CI run URL> · Version: <version or commit, or "not confirmed">
 
 | AC   | Result      | Evidence |
 |------|-------------|----------|
 | AC-1 | pass        | `GET /…` → 200, body has … |
-| AC-2 | not checked | writes data, no safe test data |
+| AC-2 | pass        | `smoke/test_12_link_expiry.py::test_ac_2_expired_link_returns_410` PASSED |
+| AC-3 | not checked | writes data, no safe test data |
 ```
