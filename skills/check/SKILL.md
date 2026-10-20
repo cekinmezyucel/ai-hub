@@ -29,7 +29,7 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
 2. Read `spec.md` from the feature folder on the default branch (the feature is merged).
 3. Confirm production runs the merge:
    - Hosted: use a version or health endpoint if the service has one.
-   - In CI: find the run of the production job for the merge commit
+   - In CI: find the run of the smoke check job for the merge commit
      (`gh run list --workflow <file> --commit <full sha>`). It must be `completed`.
    - If you cannot confirm it, say so in the report.
 4. Check each `AC-n`:
@@ -47,11 +47,11 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
 - Credentials come from the environment. Never print them (P-6).
 - An `AC-n` that is not safe to check live, or has no smoke test, is `not checked`, with the reason.
   It does not fail the check.
-- In CI, a smoke test counts only if it ran against the started service in the production job.
+- In CI, a smoke test counts only if it ran against the started service in the smoke check job.
   Unit test results are `verify` evidence, not `check` evidence.
 - **Verdict:** `pass` when every checked `AC-n` passes and at least one was checked.
   `fail` when any checked `AC-n` fails: a human decides on rollback or a new feature.
-  `blocked` when the service cannot be reached, production is unknown, or the production job did not run.
+  `blocked` when the service cannot be reached, production is unknown, or the smoke check job did not run.
 
 ## Done when
 
