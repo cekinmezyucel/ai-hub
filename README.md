@@ -16,35 +16,60 @@ specs, agents, evals, MCP and sandboxing.
 ## How it works
 
 **Pattern:** a workflow on the outside, one agent on the inside.
-Only the coding step is agentic. Everything else is a fixed step. Gates start closed and open as trust grows.
+Only `implement` is agentic. Everything else is a fixed step. Gates start closed and open as trust grows.
 
 ```
-1. PRD          a human writes it                 [gate if necessary]
-2. Plan         LLM: PRD -> spec + tasks          [gate if necessary]
-3. Code         agent in a sandbox                <- the only agent
-4. Verify       tests + LLM judge vs PRD criteria -> back to 3 (max N loops)
-5. PR           review and merge                  [gate if necessary]
-6. Deploy       normal CI/CD, no AI
-7. Prod check   smoke test vs acceptance criteria
+1. prd        idea -> PRD Issue                  human + skill   [gate if necessary]
+2. spec       PRD Issue -> spec.md               skill
+3. plan       spec.md -> plan.md                 skill           [gate if necessary]
+4. implement  plan.md -> commits + PR            the only agent, in a sandbox
+5. verify     PR + spec.md -> verify report      skill           fail: back to 4 (max N loops)
+6. review     PR -> review report, then merge    skill           fail: back to 4 [gate if necessary]
+7. deploy     merge -> running service           CI/CD, no AI
+8. check      service + spec.md -> check report  skill
 ```
+
+One name per step: the step, the skill folder, the command, the file it writes and the
+`step=` value in its report are all the same word. All terms are in the [glossary](docs/glossary.md).
 
 ## Steps are skills
 
-Each step is a standalone skill (one Markdown file) with a clear input and output.
+Every step except `deploy` is a standalone skill (one Markdown file) with a clear input and output.
 A skill is usable on its own, outside the pipeline. The pipeline only chains them.
 Steps hand over only through files and Issue/PR comments, never through chat memory.
+Every step ends with one report comment that starts with a marker the pipeline can read:
+`<!-- ai-hub step=<step> feature=<feature key> verdict=pass|fail|blocked -->`.
+
+Skills are app-agnostic. They read app facts (test command, structure) from the target repo,
+and all apply the same [engineering principles](docs/engineering-principles.md).
 
 ```
-skills/ (one Markdown file per step)   <- the real product
-  spec    : PRD Issue  -> spec.md
-  plan    : spec.md    -> plan.md
-  review  : PR diff    -> review comment
-  verify  : PR + spec  -> pass/fail report
+skills/<step>/SKILL.md                 <- the real product
+  prd        idea           -> PRD Issue
+  spec       PRD Issue      -> docs/features/<feature key>/spec.md
+  plan       spec.md        -> docs/features/<feature key>/plan.md
+  implement  plan.md        -> commits on feature/<feature key> + PR
+  verify     PR + spec.md   -> verify report (PR comment)
+  review     PR             -> review report (PR comment)
+  check      spec.md        -> check report (PRD Issue comment)
 
 Who calls them:
   v0  a human, by hand in Claude Code
   v1  GitHub Actions (claude -p)    same skills, chained
   v2  own harness (Agent SDK)       same skills, loaded from files
+```
+
+v0, by hand: this repo is a Claude Code plugin. Start Claude Code in the target repo with it:
+
+```
+claude --plugin-dir <path-to-ai-hub>
+/ai-hub:prd <idea>       # opens PRD Issue #12
+/ai-hub:spec 12          # feature key 12-<slug>, branch feature/12-<slug>
+/ai-hub:plan 12
+/ai-hub:implement 12     # opens PR #13
+/ai-hub:verify 13        # fail: /ai-hub:implement 13, then verify again
+/ai-hub:review 13        # pass: merge; CI/CD deploys
+/ai-hub:check 12
 ```
 
 ## Roadmap

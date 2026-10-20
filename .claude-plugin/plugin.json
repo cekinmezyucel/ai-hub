@@ -1,0 +1,9 @@
+{
+  "name": "ai-hub",
+  "description": "App-agnostic SDLC skills: prd -> spec -> plan -> implement -> verify -> review -> (deploy) -> check.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Yucel Cekinmez"
+  },
+  "repository": "https://github.com/cekinmezyucel/ai-hub"
+}
