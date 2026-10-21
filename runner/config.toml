@@ -2,7 +2,7 @@
 
 # The ai-hub plugin version every step runs with. The runner loads exactly this version
 # with --plugin-dir and refuses to run if it is not installed.
-plugin_version = "0.4.0"
+plugin_version = "0.4.1"
 
 # verify -> implement loops before the runner stops (used by chaining).
 loop_cap = 3
