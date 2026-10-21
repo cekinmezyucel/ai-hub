@@ -7,7 +7,7 @@ If a new term is needed, add it here first.
 
 | # | Step        | Command             | Input → output                                   | Done by |
 |---|-------------|---------------------|--------------------------------------------------|---------|
-| 1 | `prd`       | `/ai-hub:prd`       | idea → PRD Issue                                 | human + skill |
+| 1 | `prd`       | `/ai-hub:prd`       | idea or Issue → PRD Issue                        | human + skill |
 | 2 | `spec`      | `/ai-hub:spec`      | PRD Issue → `spec.md`                            | skill |
 | 3 | `plan`      | `/ai-hub:plan`      | `spec.md` → `plan.md`                            | skill |
 | 4 | `implement` | `/ai-hub:implement` | `plan.md` → commits + PR                         | agent |
@@ -31,6 +31,7 @@ A `fail` from `verify` or `review` goes back to `implement`.
 | **skill** | The instructions for one step: `skills/<step>/SKILL.md`. Usable alone, outside the pipeline. |
 | **pipeline** | Runs the steps in order. Only orchestrates; holds no step logic. |
 | **PRD** | Product requirements: the why and what, from the user's view. Lives as the PRD Issue. |
+| **refine** | `prd` on an existing Issue: rewrites it as a PRD in place, keeps the original text, and gets the human's answers to the latest `blocked` report. |
 | **spec** | The testable what: scope, acceptance criteria, contract. File `spec.md`. |
 | **plan** | The how: commands, tasks, traceability. File `plan.md`. |
 | **contract** | The public interface of a feature: endpoints, data shapes, errors, CLI flags, config keys. |

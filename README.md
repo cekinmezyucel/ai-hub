@@ -19,7 +19,7 @@ specs, agents, evals, MCP and sandboxing.
 Only `implement` is agentic. Everything else is a fixed step. Gates start closed and open as trust grows.
 
 ```
-1. prd        idea -> PRD Issue                  human + skill   [gate if necessary]
+1. prd        idea or Issue -> PRD Issue         human + skill   [gate if necessary]
 2. spec       PRD Issue -> spec.md               skill
 3. plan       spec.md -> plan.md                 skill           [gate if necessary]
 4. implement  plan.md -> commits + PR            the only agent, in a sandbox
@@ -45,7 +45,7 @@ and all apply the same [engineering principles](docs/engineering-principles.md).
 
 ```
 skills/<step>/SKILL.md                 <- the real product
-  prd        idea           -> PRD Issue
+  prd        idea or Issue  -> PRD Issue
   spec       PRD Issue      -> docs/features/<feature key>/spec.md
   plan       spec.md        -> docs/features/<feature key>/plan.md
   implement  plan.md        -> commits on feature/<feature key> + PR
@@ -72,6 +72,7 @@ Then, in the target repo:
 
 ```
 /ai-hub:prd <idea>       # opens PRD Issue #12
+/ai-hub:prd 12           # refine: old or blocked Issue #12 becomes a PRD
 /ai-hub:spec 12          # feature key 12-<slug>, branch feature/12-<slug>
 /ai-hub:plan 12
 /ai-hub:implement 12     # opens PR #13
