@@ -53,6 +53,14 @@ One of:
   `blocked` when the plan is wrong.
 - The caller sets the turn cap and the loop cap. Stop when you reach them and report honestly (P-14).
 
+## Stop rules
+
+The same in a chat and in a headless run (`claude -p`).
+
+- **Never ask and wait.** If you need a human answer to go on, end with verdict `blocked`
+  and put the question in the report.
+- **Stop after the report.** Do not offer, suggest or start the next step. The caller chains the steps.
+
 ## Done when
 
 - Every task (or feedback item) is committed, or the report says why not.

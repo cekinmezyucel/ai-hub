@@ -45,6 +45,14 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
 - Quote real output. Never shorten an error into something it did not say.
 - No secrets in the report (P-6). Mask anything that looks like a token in quoted output.
 
+## Stop rules
+
+The same in a chat and in a headless run (`claude -p`).
+
+- **Never ask and wait.** If you need a human answer to go on, end with verdict `blocked`
+  and put the question in the report.
+- **Stop after the report.** Do not offer, suggest or start the next step. The caller chains the steps.
+
 ## Done when
 
 - Every command in the plan ran, and its exit code is in the report.

@@ -83,6 +83,14 @@ Feature: <feature key> · Spec: ./spec.md · Risk: low | medium | high — <one-
 - …
 ```
 
+## Stop rules
+
+The same in a chat and in a headless run (`claude -p`).
+
+- **Never ask and wait.** If you need a human answer to go on, end with verdict `blocked`
+  and put the question in the report.
+- **Stop after the report.** Do not offer, suggest or start the next step. The caller chains the steps.
+
 ## Done when
 
 - Every `AC-n` in the spec is in the traceability table with at least one task and one test.

@@ -48,7 +48,16 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
   - `major`: likely bug in a real case, missing test for new behaviour, principle clearly broken.
   - `minor`: edge case or maintainability problem with low impact.
 - **Verdict:** `fail` if any `blocker` or `major`, else `pass`.
+  `blocked` when you cannot review: the PR, `spec.md` or `plan.md` is missing.
 - Use a PR comment, not `gh pr review`: GitHub does not allow approving your own PR.
+
+## Stop rules
+
+The same in a chat and in a headless run (`claude -p`).
+
+- **Never ask and wait.** If you need a human answer to go on, end with verdict `blocked`
+  and put the question in the report.
+- **Stop after the report.** Do not offer, suggest or start the next step. The caller chains the steps.
 
 ## Done when
 
@@ -60,8 +69,8 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
 ## Report
 
 ```markdown
-<!-- ai-hub step=review feature=<feature key> verdict=pass|fail -->
-## review · pass | fail
+<!-- ai-hub step=review feature=<feature key> verdict=pass|fail|blocked -->
+## review · pass | fail | blocked
 
 | # | Severity | Where | Finding |
 |---|----------|-------|---------|
@@ -76,4 +85,6 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
 <minor findings: one line each>
 
 <if no findings: "No findings." and one line on what was checked>
+
+<if blocked: what is missing>
 ```

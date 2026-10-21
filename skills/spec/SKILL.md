@@ -81,6 +81,14 @@ Feature: <feature key> · PRD: #<issue> · Verdict: pass | blocked
 - **Q-1** (blocking | non-blocking) …
 ```
 
+## Stop rules
+
+The same in a chat and in a headless run (`claude -p`).
+
+- **Never ask and wait.** If you need a human answer to go on, end with verdict `blocked`
+  and put the question in the report.
+- **Stop after the report.** Do not offer, suggest or start the next step. The caller chains the steps.
+
 ## Done when
 
 - Every requirement in the PRD maps to at least one `AC-n` or to "Out".
