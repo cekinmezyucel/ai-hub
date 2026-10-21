@@ -38,6 +38,8 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
    - In CI: read the smoke check log (`gh run view <run id> --log --job <job id>`). Find the smoke test
      for this `AC-n` by the repo's naming rule, and record its name and result. No smoke test ⇒ `not checked`.
 5. Post the report: `gh issue comment <issue> --body-file <file>`.
+6. On `pass`: the feature is done. Close the PRD Issue: `gh issue close <issue> --reason completed`.
+   On `fail` or `blocked`, leave it open.
 
 ## Rules
 
@@ -66,6 +68,18 @@ The same in a chat and in a headless run (`claude -p`).
 - Every `AC-n` is `pass`, `fail` or `not checked`, with evidence or a reason.
 - All test data you created is deleted.
 - The report is posted.
+
+## Links and labels
+
+The PRD Issue is where a human navigates from. The same rules in every step.
+
+- In the report, write each file as a link to it on its branch:
+  `[<path>](https://github.com/<owner>/<repo>/blob/<branch>/<path>)`, with `#L<n>` for a line.
+  Write a PR as `#<pr>` and a CI run as its URL. Commit SHAs link by themselves.
+- After posting, set the `blocked` label on the PRD Issue: verdict `blocked` ⇒
+  `gh issue edit <issue> --add-label blocked`, any other verdict ⇒ `--remove-label blocked` if it is there.
+  If the repo has no such label, create it first:
+  `gh label create blocked --color B60205 --description "ai-hub: a human must answer"`.
 
 ## Report
 

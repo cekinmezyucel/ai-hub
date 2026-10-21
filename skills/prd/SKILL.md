@@ -49,7 +49,8 @@ And the target repo (default: the current one).
 7. Only after the human says OK:
    - **New:** `gh issue create --title "<title>" --body-file <file>`.
    - **Refine:** `gh issue edit <issue> --body-file <file>`, then post the report:
-     `gh issue comment <issue> --body-file <file>`.
+     `gh issue comment <issue> --body-file <file>`. Remove the `blocked` label if it is there:
+     `gh issue edit <issue> --remove-label blocked`.
 
    Add the label `prd` if the repo has it.
 8. Reply with the Issue URL.

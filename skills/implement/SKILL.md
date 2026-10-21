@@ -68,13 +68,25 @@ The same in a chat and in a headless run (`claude -p`).
 - The plan's test and lint commands ran on the last commit, and the report quotes their result.
 - The branch is pushed and the report is posted.
 
+## Links and labels
+
+The PRD Issue is where a human navigates from. The same rules in every step.
+
+- In the report, write each file as a link to it on its branch:
+  `[<path>](https://github.com/<owner>/<repo>/blob/<branch>/<path>)`, with `#L<n>` for a line.
+  Write a PR as `#<pr>` and a CI run as its URL. Commit SHAs link by themselves.
+- After posting, set the `blocked` label on the PRD Issue: verdict `blocked` ⇒
+  `gh issue edit <issue> --add-label blocked`, any other verdict ⇒ `--remove-label blocked` if it is there.
+  If the repo has no such label, create it first:
+  `gh label create blocked --color B60205 --description "ai-hub: a human must answer"`.
+
 ## Report
 
 ```markdown
 <!-- ai-hub step=implement feature=<feature key> verdict=pass|fail|blocked -->
 ## implement · pass | fail | blocked
 
-Closes #<issue> · Spec: `docs/features/<feature key>/spec.md` · Plan: `docs/features/<feature key>/plan.md`
+Part of #<issue> · Spec: [spec.md](<link>) · Plan: [plan.md](<link>)
 
 ### Done
 | Task / item | Commit | Tests |
@@ -90,4 +102,5 @@ Closes #<issue> · Spec: `docs/features/<feature key>/spec.md` · Plan: `docs/fe
 <changes from the plan and why, or "None">
 ```
 
-On a loop run, leave out the `Closes #<issue>` line: the PR body already has it.
+On a loop run, leave out the `Part of #<issue>` line: the PR body already has it.
+Never write `Closes #<issue>`: the feature is done only when `check` passes, and `check` closes the Issue.

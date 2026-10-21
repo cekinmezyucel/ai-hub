@@ -98,11 +98,25 @@ The same in a chat and in a headless run (`claude -p`).
 - Every command has a "Found in" source, or is `unknown`.
 - The risk follows the rules above.
 
+## Links and labels
+
+The PRD Issue is where a human navigates from. The same rules in every step.
+
+- In the report, write each file as a link to it on its branch:
+  `[<path>](https://github.com/<owner>/<repo>/blob/<branch>/<path>)`, with `#L<n>` for a line.
+  Write a PR as `#<pr>` and a CI run as its URL. Commit SHAs link by themselves.
+- After posting, set the `blocked` label on the PRD Issue: verdict `blocked` ⇒
+  `gh issue edit <issue> --add-label blocked`, any other verdict ⇒ `--remove-label blocked` if it is there.
+  If the repo has no such label, create it first:
+  `gh label create blocked --color B60205 --description "ai-hub: a human must answer"`.
+- On `pass`, also set the risk label: `gh issue edit <issue> --add-label "risk: <level>"`, and remove
+  any other `risk: …` label. Create it first if missing (low `0E8A16`, medium `FBCA04`, high `B60205`).
+
 ## Report
 
 ```markdown
 <!-- ai-hub step=plan feature=<feature key> verdict=pass|blocked risk=low|medium|high -->
-**plan** · pass | blocked · `docs/features/<feature key>/plan.md` · <n> tasks · risk <level>
+**plan** · pass | blocked · [plan.md](<link>) · <n> tasks · risk <level>
 
 <if blocked: what a human must provide>
 ```

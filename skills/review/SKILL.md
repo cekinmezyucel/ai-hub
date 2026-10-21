@@ -66,6 +66,18 @@ The same in a chat and in a headless run (`claude -p`).
 - The verdict follows the severity rule.
 - The report is posted.
 
+## Links and labels
+
+The PRD Issue is where a human navigates from. The same rules in every step.
+
+- In the report, write each file as a link to it on its branch:
+  `[<path>](https://github.com/<owner>/<repo>/blob/<branch>/<path>)`, with `#L<n>` for a line.
+  Write a PR as `#<pr>` and a CI run as its URL. Commit SHAs link by themselves.
+- After posting, set the `blocked` label on the PRD Issue: verdict `blocked` ⇒
+  `gh issue edit <issue> --add-label blocked`, any other verdict ⇒ `--remove-label blocked` if it is there.
+  If the repo has no such label, create it first:
+  `gh label create blocked --color B60205 --description "ai-hub: a human must answer"`.
+
 ## Report
 
 ```markdown
@@ -74,11 +86,11 @@ The same in a chat and in a headless run (`claude -p`).
 
 | # | Severity | Where | Finding |
 |---|----------|-------|---------|
-| 1 | major    | `src/x.py:42` | <one sentence> |
+| 1 | major    | [src/x.py:42](<link>#L42) | <one sentence> |
 
 ### Feedback for implement
 <only on fail; one entry per blocker or major>
-1. **<short title>** (`src/x.py:42`, P-n)
+1. **<short title>** ([src/x.py:42](<link>#L42), P-n)
    <failure scenario: input or state → wrong result>
    <suggested fix, 1–3 lines>
 

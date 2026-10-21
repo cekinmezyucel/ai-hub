@@ -2,7 +2,7 @@
 
 # The ai-hub plugin version every step runs with. The runner loads exactly this version
 # with --plugin-dir and refuses to run if it is not installed.
-plugin_version = "0.4.1"
+plugin_version = "0.5.0"
 
 # verify -> implement loops before the runner stops (used by chaining).
 loop_cap = 3
@@ -46,6 +46,8 @@ common = [
   "Bash(gh issue list:*)",
   "Bash(gh pr view:*)",
   "Bash(gh pr list:*)",
+  "Bash(gh issue edit:*)",
+  "Bash(gh label create:*)",
 ]
 
 # Denied in every step, even if a step allows a wider rule.
@@ -72,7 +74,7 @@ branch = [
 [steps.spec]
 max_turns = 30
 groups = ["branch"]
-tools = ["Bash(gh issue comment:*)"]
+tools = ["Bash(gh issue comment:*)", "Bash(gh issue develop:*)"]
 
 [steps.plan]
 max_turns = 40
@@ -95,7 +97,7 @@ tools = ["Bash(gh pr diff:*)", "Bash(gh pr comment:*)"]
 
 [steps.check]
 max_turns = 30
-tools = ["Bash(gh run list:*)", "Bash(gh run view:*)", "Bash(gh issue comment:*)"]
+tools = ["Bash(gh run list:*)", "Bash(gh run view:*)", "Bash(gh issue comment:*)", "Bash(gh issue close:*)"]
 
 # App facts per target repo: the test and lint commands the plan names. Used by the "repo" group.
 [repos."cekinmezyucel/ai-hub-demo"]

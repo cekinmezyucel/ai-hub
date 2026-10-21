@@ -27,7 +27,9 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
    If a feature branch for this Issue already exists, reuse its key. Never change a key.
 4. Read the target repo only as far as the PRD needs: `README`, `CLAUDE.md` / `AGENTS.md`,
    and the existing behaviour the PRD touches. Do not design the implementation.
-5. Create or switch to the feature branch.
+5. Create the feature branch linked to the PRD Issue, so GitHub lists it under "Development":
+   `gh issue develop <issue> --name feature/<feature key> --base <default branch>`, then `git fetch origin`
+   and `git switch feature/<feature key>`. If the branch already exists, switch to it.
 6. Write `spec.md` with the template below.
 7. Check the "Done when" list. Fix the spec until every item is true.
 8. Commit (`spec: <feature key>`) and push the feature branch.
@@ -97,11 +99,23 @@ The same in a chat and in a headless run (`claude -p`).
 - No secrets or personal data (P-6).
 - Verdict is `blocked` if and only if a blocking question exists.
 
+## Links and labels
+
+The PRD Issue is where a human navigates from. The same rules in every step.
+
+- In the report, write each file as a link to it on its branch:
+  `[<path>](https://github.com/<owner>/<repo>/blob/<branch>/<path>)`, with `#L<n>` for a line.
+  Write a PR as `#<pr>` and a CI run as its URL. Commit SHAs link by themselves.
+- After posting, set the `blocked` label on the PRD Issue: verdict `blocked` ⇒
+  `gh issue edit <issue> --add-label blocked`, any other verdict ⇒ `--remove-label blocked` if it is there.
+  If the repo has no such label, create it first:
+  `gh label create blocked --color B60205 --description "ai-hub: a human must answer"`.
+
 ## Report
 
 ```markdown
 <!-- ai-hub step=spec feature=<feature key> verdict=pass|blocked -->
-**spec** · pass | blocked · `docs/features/<feature key>/spec.md` on `feature/<feature key>`
+**spec** · pass | blocked · [spec.md](<link>) on `feature/<feature key>`
 <n> acceptance criteria · <n> assumptions · <n> open questions
 
 <if blocked: list each blocking question>
