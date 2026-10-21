@@ -80,6 +80,14 @@ Then, in the target repo:
 /ai-hub:check 12
 ```
 
+v1, by hand with the runner: one step per run, as a fresh headless `claude -p`.
+Tools, turn caps and the plugin version come from [`runner/config.toml`](runner/config.toml).
+
+```
+python3 runner/run.py 12 --step spec --repo <path-to-target-repo>
+python3 -m unittest discover -s runner     # runner tests
+```
+
 ## Roadmap
 
 - **v0 – walking skeleton, manual mode.** One PRD becomes a deployed feature on a small demo service.
