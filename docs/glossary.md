@@ -12,7 +12,7 @@ If a new term is needed, add it here first.
 | 3 | `plan`      | `/ai-hub:plan`      | `spec.md` → `plan.md`                            | skill |
 | 4 | `implement` | `/ai-hub:implement` | `plan.md` → commits + PR                         | agent |
 | 5 | `verify`    | `/ai-hub:verify`    | PR + `spec.md` → verify report                   | skill |
-| 6 | `review`    | `/ai-hub:review`    | PR → review report, then merge                   | skill + gate |
+| 6 | `review`    | `/ai-hub:review`    | draft PR → review report, ready PR, then merge   | skill + gate |
 | 7 | `deploy`    | –                   | merge → running service                          | CI/CD, no AI |
 | 8 | `check`     | `/ai-hub:check`     | running service + `spec.md` → check report       | skill |
 

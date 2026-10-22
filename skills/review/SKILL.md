@@ -7,7 +7,7 @@ description: Step 6 of ai-hub. Review a PR diff for correctness, security and th
 
 Step 6 of 8. Runs after `verify` passes. Finds defects in the code.
 It does **not** grade acceptance criteria; `verify` did that. It never edits code.
-On `fail`, the pipeline goes back to `implement`. On `pass`, the PR is ready to merge.
+On `fail`, the pipeline goes back to `implement`. On `pass`, `review` marks the draft PR ready, and it can be merged.
 
 Words follow `../../docs/glossary.md` (relative to this skill's folder).
 
@@ -36,6 +36,8 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
 6. Verify every finding before you report it: read the code path and name a concrete failure.
    Drop the finding if you cannot.
 7. Post the report: `gh pr comment <pr> --body-file <file>`.
+8. On `pass`: mark the PR ready for review, if it is a draft: `gh pr ready <pr>`.
+   On `fail` or `blocked`, leave it as a draft.
 
 ## Rules
 

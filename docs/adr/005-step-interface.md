@@ -45,7 +45,7 @@ Exactly one reference, plus the target repo (the working directory):
 | `prd` | an idea, or an Issue (refine) | the PRD Issue | Issue body (new) or Issue comment (refine) |
 | `spec` | PRD Issue | `spec.md` on the feature branch | PRD Issue |
 | `plan` | PRD Issue | `plan.md` on the feature branch | PRD Issue |
-| `implement` | PRD Issue (first run) or PR (loop run) | commits + PR | PR body (first) or PR comment (loop) |
+| `implement` | PRD Issue (first run) or PR (loop run) | commits + draft PR | PR body (first) or PR comment (loop) |
 | `verify` | PR | – | PR comment |
 | `review` | PR | – | PR comment |
 | `check` | PRD Issue | – | PRD Issue |
@@ -62,7 +62,8 @@ Each step may write only this to GitHub. Anything else is out of contract.
 |-------|-------|
 | create the linked feature branch | `spec` |
 | commit and push to the feature branch | `spec`, `plan`, `implement` |
-| open the PR | `implement` |
+| open the PR as a draft | `implement` |
+| mark the draft PR ready | `review`, on `pass` |
 | report comment, pointer comment | every step |
 | label `blocked` (add or remove) | every step; `prd` refine removes it |
 | label `risk: <level>` | `plan` |

@@ -18,7 +18,7 @@ One of:
 ## Output
 
 - Commits on the feature branch.
-- First run: the PR. Loop run: pushed commits on the same PR.
+- First run: a **draft** PR. Loop run: pushed commits on the same PR.
 - One report on the PR.
 
 ## Steps
@@ -36,8 +36,9 @@ One of:
    3. Run the plan's test and lint commands. All green before you go on (P-13).
    4. Commit: `T-n: <task title>` (loop run: `fix: <AC-n or feedback item>`).
 5. Run the full test and lint commands once more.
-6. Push. **First run:** open the PR, with the report as the body:
-   `gh pr create --title "<PRD title>" --body-file <file>`.
+6. Push. **First run:** open a draft PR, with the report as the body:
+   `gh pr create --draft --title "<PRD title>" --body-file <file>`.
+   It stays a draft until `review` passes.
    **Loop run:** post the report with `gh pr comment <pr> --body-file <file>`.
 
 ## Rules

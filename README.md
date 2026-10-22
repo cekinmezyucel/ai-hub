@@ -22,9 +22,9 @@ Only `implement` is agentic. Everything else is a fixed step. Gates start closed
 1. prd        idea or Issue -> PRD Issue         human + skill   [gate if necessary]
 2. spec       PRD Issue -> spec.md               skill
 3. plan       spec.md -> plan.md                 skill           [gate if necessary]
-4. implement  plan.md -> commits + PR            the only agent, in a sandbox
+4. implement  plan.md -> commits + draft PR      the only agent, in a sandbox
 5. verify     PR + spec.md -> verify report      skill           fail: back to 4 (max N loops)
-6. review     PR -> review report, then merge    skill           fail: back to 4 [gate if necessary]
+6. review     PR -> report, PR ready, then merge skill           fail: back to 4 [gate if necessary]
 7. deploy     merge -> running service           CI/CD, no AI
 8. check      service + spec.md -> check report  skill
 ```
@@ -77,7 +77,7 @@ Then, in the target repo:
 /ai-hub:plan 12
 /ai-hub:implement 12     # opens PR #13
 /ai-hub:verify 13        # fail: /ai-hub:implement 13, then verify again
-/ai-hub:review 13        # pass: merge; CI/CD deploys
+/ai-hub:review 13        # pass: PR ready; merge; CI/CD deploys
 /ai-hub:check 12
 ```
 
