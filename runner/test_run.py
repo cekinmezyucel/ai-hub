@@ -87,5 +87,58 @@ class ClaudeCommand(unittest.TestCase):
         self.assertIn("only under /tmp/run", prompt)
 
 
+def history(*steps):
+    """Markers oldest first, from "step:verdict" strings."""
+    return [dict(zip(("step", "verdict"), s.split(":"))) for s in steps]
+
+
+OPEN_PR = {"number": 13, "state": "OPEN", "mergeCommit": None}
+MERGED_PR = {"number": 13, "state": "MERGED", "mergeCommit": "abc1234"}
+
+
+class NextAction(unittest.TestCase):
+    def next(self, steps, pr=None, loop_cap=3):
+        return run.next_action(history(*steps), pr, loop_cap)
+
+    def test_new_issue_starts_with_spec(self):
+        self.assertEqual(self.next([]), ("run", "spec"))
+        self.assertEqual(self.next(["prd:pass"]), ("run", "spec"))
+
+    def test_pass_moves_to_the_next_step(self):
+        self.assertEqual(self.next(["spec:pass"]), ("run", "plan"))
+        self.assertEqual(self.next(["spec:pass", "plan:pass"]), ("run", "implement"))
+        self.assertEqual(self.next(["implement:pass"], OPEN_PR), ("run", "verify"))
+        self.assertEqual(self.next(["implement:pass", "verify:pass"], OPEN_PR), ("run", "review"))
+
+    def test_blocked_stops_for_a_human(self):
+        self.assertEqual(self.next(["spec:blocked"])[0], "stop")
+
+    def test_answered_block_runs_the_step_again(self):
+        self.assertEqual(self.next(["spec:blocked", "prd:pass"]), ("run", "spec"))
+
+    def test_fail_goes_back_to_implement(self):
+        self.assertEqual(self.next(["implement:pass", "verify:fail"], OPEN_PR), ("run", "implement"))
+        self.assertEqual(self.next(["verify:pass", "review:fail"], OPEN_PR), ("run", "implement"))
+
+    def test_loop_stops_at_the_cap(self):
+        steps = ["verify:fail", "implement:pass", "verify:fail", "implement:pass", "review:fail"]
+        self.assertEqual(self.next(steps, OPEN_PR, loop_cap=3)[0], "stop")
+        self.assertEqual(self.next(steps, OPEN_PR, loop_cap=4), ("run", "implement"))
+
+    def test_review_pass_stops_at_the_merge_gate(self):
+        kind, reason = self.next(["verify:pass", "review:pass"], OPEN_PR)
+        self.assertEqual(kind, "stop")
+        self.assertIn("merge", reason)
+
+    def test_after_the_merge_waits_for_ci_then_checks(self):
+        self.assertEqual(self.next(["verify:pass", "review:pass"], MERGED_PR), ("wait_ci", "abc1234"))
+
+    def test_check_pass_is_done(self):
+        self.assertEqual(self.next(["review:pass", "check:pass"], MERGED_PR)[0], "done")
+
+    def test_check_fail_stops(self):
+        self.assertEqual(self.next(["review:pass", "check:fail"], MERGED_PR)[0], "stop")
+
+
 if __name__ == "__main__":
     unittest.main()
