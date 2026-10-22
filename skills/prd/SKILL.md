@@ -37,7 +37,7 @@ And the target repo (default: the current one).
    - **Refine:** check the Issue still applies. If the code or docs show it is already fixed or
      no longer makes sense, say so with evidence and ask first whether to close it.
 4. Find the gaps against the template. Brief the human and ask in **one round**, as in
-   "Talking to the human" below. At most 5 questions, in this order: blocking questions from the
+   "Talking to the human" below. At most 4 questions, in this order: blocking questions from the
    report, "does this still apply", gaps that would change an acceptance criterion, the rest.
    Skip what you can read from the repo, the input or the comments.
 5. Draft the PRD with the template. Write anything still unknown as an open question.
@@ -59,6 +59,8 @@ And the target repo (default: the current one).
 
 `prd` is the step where a human decides. Make deciding fast: brief, simple, one screen.
 
+**First the brief, as text:**
+
 ```markdown
 **#<issue> · <title>** · <bug | feature> · opened <date>   (New: **Your idea**)
 <what it is about, 1–2 lines, in your own words>
@@ -68,18 +70,29 @@ And the target repo (default: the current one).
 - <latest report: step and verdict, or "no ai-hub report yet">
 - <still applies? yes / looks fixed, with evidence>
 
-**Open points**
+**Open points:** <the questions in a few words each, e.g. "who sees the count, which redirects count">
+```
+
+**Then the questions, with the `AskUserQuestion` tool** if you have it: one call, all questions.
+- Each question: a short `header` (≤ 12 characters), 2–4 options.
+- The default is the first option, its label ends with "(Recommended)", and its `description`
+  says why in one line. Other options say what changes if it is not obvious.
+- The human can always answer "Other" with their own text: take it as the answer.
+
+**No `AskUserQuestion` tool** (another harness): put the questions under the brief as text:
+
+```markdown
 1. <question> — **A** <option> · **B** <option> · default **A** (<why, one line>)
-2. …
 
 Reply with e.g. `1A 2B`, or `ok` to take all defaults.
 ```
 
 - Summarise, do not paste: no quoted Issue text, no file dumps. Cite a source instead.
-- Each open point is a decision with options and a default, answerable in one word.
-  Say what changes with each option only if it is not obvious.
+- Each open point is a decision with options and a default, answerable with one pick.
 - Plain words, short lines. Explain a technical term the human may not know in a few words.
 - When showing the draft (step 6), lead with what changed and what is still open, then the draft.
+  Ask for the OK the same way: `AskUserQuestion` with "Create it (Recommended)" / "Change something",
+  or a text question without the tool.
 
 ## Rules
 
