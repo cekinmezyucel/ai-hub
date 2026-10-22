@@ -73,6 +73,9 @@ The PRD Issue is where a human navigates from. The same rules in every step.
 - In the report, write each file as a link to it on its branch:
   `[<path>](https://github.com/<owner>/<repo>/blob/<branch>/<path>)`, with `#L<n>` for a line.
   Write a PR as `#<pr>` and a CI run as its URL. Commit SHAs link by themselves.
+- Every step leaves a trace on the PRD Issue. `spec`, `plan` and `check` post their report there.
+  `implement`, `verify` and `review` report on the PR, then also post a one-line pointer on the
+  PRD Issue, with no marker: `**<step>** · <verdict> · [report](<report URL>) on #<pr>`.
 - After posting, set the `blocked` label on the PRD Issue: verdict `blocked` ⇒
   `gh issue edit <issue> --add-label blocked`, any other verdict ⇒ `--remove-label blocked` if it is there.
   If the repo has no such label, create it first:
