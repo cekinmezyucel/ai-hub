@@ -1,7 +1,7 @@
 # ADR-007: Rerunnable steps: cattle steps, GitHub as the session log
 
 Status: **Proposed** — the direction is agreed, the details need investigation (see the end).
-Date: 2026-10-22 · Issue: #7 · Related: #4, #6, #9, #13
+Date: 2026-10-22 · Issues: #15 (split from #7) · Related: #4, #6, #9, #13
 
 ## Context
 

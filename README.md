@@ -146,4 +146,4 @@ python3 -m unittest discover -s runner     # runner tests
 ## Status
 
 Early. Planning and decisions happen in [Issues](https://github.com/cekinmezyucel/ai-hub/issues).
-Architecture decisions will live in `docs/adr/`.
+Architecture decisions live in [`docs/adr/`](docs/adr/); the format is [ADR-000](docs/adr/000-repo-structure-and-adr-format.md).

@@ -1,7 +1,7 @@
 # ADR-005: Steps are standalone skills behind one step interface
 
 Status: **Proposed** — draft for review.
-Date: 2026-10-22 · Issues: #4, #7 · Related: [ADR-007](007-rerunnable-steps.md)
+Date: 2026-10-22 · Issues: #4, #15 · Related: [ADR-007](007-rerunnable-steps.md)
 
 ## Context
 
