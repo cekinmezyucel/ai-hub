@@ -81,8 +81,9 @@ Option A.
 
 These ideas are not robust yet. Each needs a closer look before the status becomes Accepted.
 
-1. **Resume or restart, per step.** `implement` is long, so resume pays off. `spec`, `plan`, `verify`, `review`
-   write one thing each: maybe all-or-nothing is simpler and safer for them.
+1. **Resume or restart, per step.** Answered (2026-10-25): one rerun rule for all steps, see
+   [ADR-005](005-step-interface.md) section 11. A step makes only the missing outputs; in practice only
+   `implement` skips work, the other steps run again.
 2. **The input of each step.** What is the skip key: `spec` (Issue body and answers? `updatedAt`?),
    `plan` (blob SHA of `spec.md`), `implement` (blob SHA of `plan.md`), `verify` / `review` (PR head SHA),
    `check` (merge commit and smoke run)? What happens when a human edits the Issue later?

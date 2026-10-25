@@ -110,6 +110,25 @@ Each skill has a "Done when" list. The report is posted only when every item is 
 Only its own part: Steps, Rules, Template, its "Done when" items and its report body.
 Caps (turns, tools, budget) belong to the runner config, not to the skill.
 
+### 11. Rerun
+Every step is safe to run again, after a crash or a fix (ADR-007). One rule for all steps:
+
+> At the start, a step reads GitHub and makes only the outputs that are missing. It reuses the
+> outputs that already exist for the same input.
+
+The checkpoints are the outputs on GitHub (section 4), not the chat history: a rerun never
+continues the old conversation.
+
+| Step | What can be half-done after a crash | Rerun |
+|------|-------------------------------------|-------|
+| `verify`, `review`, `check` | nothing: the report is the only output | runs fully again |
+| `spec`, `plan` | branch and file pushed, no report | reuses the branch, writes the file again, posts the report |
+| `implement` | some tasks committed, PR missing | skips tasks with a `T-n:` commit on the remote branch, reuses an open PR |
+
+- A file without a report is not trusted: the step cannot know it was complete. Writing it again
+  costs little; the new commit replaces it.
+- Never a second report, PR or branch for the same input.
+
 ## Consequences
 
 - One place to change a shared rule; the skills get shorter.
@@ -124,7 +143,7 @@ Caps (turns, tools, budget) belong to the runner config, not to the skill.
    follow inline rules better? Measure with the eval suite (#10) before removing the copies.
 2. **Is `prd` a step under this interface,** or a separate human tool? It is interactive and writes
    the Issue body.
-3. **How ADR-007 fits:** the `input=` key, the `warn` verdict, resume rules.
+3. **How ADR-007 fits:** the `input=` key and the `warn` verdict. Resume rules: section 11.
 4. **Machine-readable contract:** a schema for the marker and the writes table, so the runner can
    validate them, and so the step manifest (ADR-007) can reuse it.
 5. **Event granularity:** one report per step, or more events (Managed Agents logs every event; #13).
