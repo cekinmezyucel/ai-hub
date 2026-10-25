@@ -2,6 +2,7 @@
 
 No secret belongs in this repo. Layers, strongest first: no secrets exist, GitHub push protection,
 the gitleaks CI scan (`.github/workflows/gitleaks.yml`), the local hook (`.githooks/pre-commit`).
+Why these layers: [ADR-006](docs/adr/006-secret-protection.md).
 
 Turn the hook on once per clone: `git config core.hooksPath .githooks` (needs `brew install gitleaks`).
 
