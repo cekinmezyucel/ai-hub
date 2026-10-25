@@ -1,6 +1,6 @@
 # ADR-007: Rerunnable steps: cattle steps, GitHub as the session log
 
-Status: **Proposed** — the direction is agreed, the details need investigation (see the end).
+Status: **Accepted** (2026-10-26) — all open points answered (see the end).
 Date: 2026-10-22 · Issues: #15 (split from #7) · Related: #4, #6, #9, #13
 
 ## Context
@@ -38,7 +38,7 @@ Tekton (`runAfter`, `when`, `onError: continue`), LangGraph / Mastra (checkpoint
 Kubernetes controllers (observe, then change only what differs),
 [gh-aw](https://github.github.com/gh-aw/reference/safe-outputs/) (the agent is read-only; a separate job writes).
 
-## Decision (proposed)
+## Decision
 
 Option A.
 
@@ -75,9 +75,9 @@ Option A.
 - Order to build: resume in `implement` (6) and push per task (3) first, then markers with inputs and
   skip (5), then the manifest (7).
 
-## Needs investigation
+## Investigation
 
-These ideas are not robust yet. Each needs a closer look before the status becomes Accepted.
+These points were open when the ADR was proposed. Each was answered before it became Accepted.
 
 1. **Resume or restart, per step.** Answered (2026-10-25): one rerun rule for all steps, see
    [ADR-005](005-step-interface.md) section 11. A step makes only the missing outputs; in practice only
@@ -116,8 +116,8 @@ These ideas are not robust yet. Each needs a closer look before the status becom
    - The skill runs the command, not the runner: only `implement` needs the task list, and the skill must
      work alone in a chat. The runner stays at report level.
    - Loop runs have no task-level resume: they are short, and a rerun takes the fail list again.
-   - Gap: a crash between code and commit leaves a dirty tree; the runner stops and a human cleans it.
-     A fresh clone per run (open point 8, #9) removes this.
+   - A crash between code and commit leaves a dirty tree. The fresh clone per run (open point 8) throws
+     it away; no human cleans up.
 4. **Where the manifest lives and its format.** Answered (2026-10-26):
    - **TOML, in `runner/config.toml`.** The runner is Python (ADR-002) and `tomllib` is in the standard
      library. YAML adds a dependency, only to look like Actions.
@@ -152,6 +152,25 @@ These ideas are not robust yet. Each needs a closer look before the status becom
    - The runner checks `input=` after each run: the new report's `input=` must be the value it passed in,
      or the chain stops. Without it, a wrong copy makes a step run again and again, or marks a commit
      pushed during the run as checked when it was not.
-8. **A fresh clone per run** instead of the local checkout (#9).
+8. **A fresh clone per run** instead of the local checkout. Answered (2026-10-26): yes, built in #15.
+   - The runner clones the target repo into a temp dir (`git clone --filter=blob:none`), checks out the
+     step's branch and runs `claude -p` there. On success the dir is deleted; on failure it is kept and its
+     path printed, for debugging only. The next run never uses it.
+   - Gives: real cattle (a crash between code and commit costs nothing), the same start as an Actions
+     checkout, and the human's own checkout is never touched (`check_clean` and the "ahead" check go).
+   - Costs: each run sets up its own `.venv`, as Actions does anyway.
+   - Not security: the agent still has the human's `gh` token and home dir (#9). User `CLAUDE.md` and
+     auth differences are #8.
 9. **Is GitHub a rich enough log?** Managed Agents logs every event; we keep only reports and commits.
-   Transcripts are #13.
+   Answered (2026-10-26): enough for rerun, not for learning.
+
+   | Use | Needs | In GitHub? |
+   |-----|-------|------------|
+   | Choose the next step (walk) | markers with `input=` | yes |
+   | Resume `implement` | commits with trailers, open PR | yes |
+   | Resume inside a step (`wake`) | every event | no; not planned (#18) |
+   | Learn why a step failed (README principle 5) | full transcript | no → #13 |
+   | Cost, turns, time | numbers per run | no → #11 |
+
+   - The runner decides only from GitHub. Transcripts and traces are for humans, never an input to the walk:
+     one source of truth, and a lost transcript cannot break a rerun.
