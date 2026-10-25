@@ -6,8 +6,8 @@ Date: 2026-10-22 · Issues: #15 (split from #7) · Related: #4, #6, #9, #13
 ## Context
 
 A feature moves through the steps `spec` → `plan` → `implement` → `verify` → `review` → `check`.
-They should behave like the jobs of a GitHub Actions workflow: serial or parallel, dependent on
-earlier steps, blocking or warning only, and rerunnable alone or as a whole workflow.
+They should behave like the jobs of a GitHub Actions workflow: dependent on
+earlier steps, and rerunnable alone or as a whole workflow.
 
 The runs in #7 showed what breaks today:
 
@@ -63,7 +63,7 @@ Option A.
    input = "pr.head"
    max_turns = 60
    ```
-8. **Four verdicts:** `pass`, `warn` (the flow goes on, like `continue-on-error`), `fail`, `blocked` (a human must answer).
+8. **Three verdicts stay:** `pass`, `fail`, `blocked`. No `warn` (open point 5).
 
 ## Consequences
 
@@ -73,7 +73,7 @@ Option A.
   text each time. That is why the skip key is the input, not the output.
 - `runner/config.toml` turns into the manifest when chaining needs it.
 - Order to build: resume in `implement` (6) and push per task (3) first, then markers with inputs and
-  skip (5), then the manifest (7). Verdict `warn` and parallel steps come with gates and Actions.
+  skip (5), then the manifest (7).
 
 ## Needs investigation
 
@@ -123,7 +123,7 @@ These ideas are not robust yet. Each needs a closer look before the status becom
      library. YAML adds a dependency, only to look like Actions.
    - **Only what the walk needs now (P-2):** `needs` (replaces `NEXT_STEP` in `run.py`) and `input`, a
      name the runner maps to one function: `issue.body`, `file:spec.md`, `file:plan.md`, `pr.head`, `pr.merge`.
-     `on_failure` and `loop` come with `warn` and parallel steps (open points 5 and 6).
+     No `loop` key: the global `loop_cap` stays (open point 6). No `on_failure` (open point 5).
    - **Two owners.** ai-hub owns the workflow: steps, `needs`, `input`, caps, tools, `denied`; it is
      versioned with the plugin. The target repo owns its facts: test and lint commands and their tool rules.
      The runner reads them only from the target repo's default branch, so a feature branch cannot widen its
@@ -133,8 +133,17 @@ These ideas are not robust yet. Each needs a closer look before the status becom
      Actions gives a trigger (new report, push to the PR, merge), a disposable VM, and
      `concurrency: feature-<issue>` as the lock per feature. The job runs `run.py <issue> --once`; no step
      logic in the workflow YAML (#6). gh-aw is not a manifest format for us; its safe outputs are open point 7.
-5. **What `warn` means per step.** Which findings are a warning, and who reads them later?
-6. **Parallel `verify` and `review`.** A lock per feature; how `implement` takes two `fail` reports at once.
+5. **What `warn` means per step.** Answered (2026-10-26): no `warn`.
+   - Notes that do not block already live inside a `pass` report: `review` lists `minor` findings, `check`
+     can leave an AC unchecked, `spec` writes assumptions (`A-n`). A fourth verdict adds nothing for the runner.
+   - Every `fail` still goes back to `implement` or stops the chain. No step continues on `fail`.
+   - No `on_failure` in the manifest. It comes only when a real optional step exists (P-2).
+6. **Parallel `verify` and `review`.** Answered (2026-10-26): no, they stay one after the other. Keep it simple.
+   - Small gain: a few minutes per loop. Real cost: a `review` next to a failing `verify` wastes tokens, a PR
+     could be marked ready while `verify` fails, and `implement` would have to merge two fail reports.
+   - A lock per feature is still needed, because two runs at once could both see a missing step and post
+     two reports. On Actions: `concurrency: group: ai-hub-<issue>`, `cancel-in-progress: false`. Dropping
+     an older waiting run is safe: the runner reads all state from GitHub. On the laptop: no lock for now.
 7. **Who writes to GitHub: the agent or the runner** ("safe outputs"). Ties to #9 and to org policies
    such as "ask before `gh pr create`".
 8. **A fresh clone per run** instead of the local checkout (#9).

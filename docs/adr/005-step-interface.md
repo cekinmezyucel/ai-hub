@@ -95,7 +95,7 @@ Exactly one report per run, posted when the step ends.
 | `fail` | back to `implement` | `implement`, `verify`, `review`, `check` |
 | `blocked` | a human must answer first; the question is in the report | every step |
 
-ADR-007 proposes a fourth verdict, `warn`.
+No fourth verdict: ADR-007 drops `warn` (open point 5).
 
 ### 7. Links and labels
 Files are links on their branch (`#L<n>` for a line), PRs are `#<pr>`, CI runs are their URL.
@@ -145,7 +145,7 @@ continues the old conversation.
    follow inline rules better? Measure with the eval suite (#10) before removing the copies.
 2. **Is `prd` a step under this interface,** or a separate human tool? It is interactive and writes
    the Issue body.
-3. **How ADR-007 fits:** the `warn` verdict. The `input=` key: section 5. Resume rules: section 11.
+3. **How ADR-007 fits:** answered. The `input=` key: section 5. Resume rules: section 11. No `warn`: section 6.
 4. **Machine-readable contract:** a schema for the marker and the writes table, so the runner can
    validate them, and so the step manifest (ADR-007) can reuse it.
 5. **Event granularity:** one report per step, or more events (Managed Agents logs every event; #13).
