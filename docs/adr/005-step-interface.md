@@ -125,7 +125,7 @@ continues the old conversation.
 |------|-------------------------------------|-------|
 | `verify`, `review`, `check` | nothing: the report is the only output | runs fully again |
 | `spec`, `plan` | branch and file pushed, no report | reuses the branch, writes the file again, posts the report |
-| `implement` | some tasks committed, PR missing | skips tasks with a `T-n:` commit on the remote branch, reuses an open PR |
+| `implement` | some tasks committed, PR missing | skips tasks with a `Task: T-n` commit for the current plan on the remote branch (ADR-007), reuses an open PR |
 
 - A file without a report is not trusted: the step cannot know it was complete. Writing it again
   costs little; the new commit replaces it.

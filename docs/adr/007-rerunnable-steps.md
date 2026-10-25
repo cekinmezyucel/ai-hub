@@ -52,19 +52,16 @@ Option A.
 5. **Skip:** the marker names the step's input, e.g. `step=verify input=<head sha>`. The runner walks the
    steps in order and runs the first one whose report is missing or stale (its `input=` is not the current
    input), like a Kubernetes controller. `--force` runs a step again.
-6. **Resume:** a rerun continues from what GitHub shows. For `implement`: a task with a `T-n:` commit on
-   the remote branch is done; an open PR for the branch is reused.
-7. **One step manifest,** shaped like a GitHub Actions job, so each step can become one Actions job later (#6):
+6. **Resume:** a rerun continues from what GitHub shows. For `implement`: a task with a commit on the
+   remote branch whose `Task:` and `Plan:` trailers match is done (open point 3); an open PR is reused.
+7. **One step manifest:** `runner/config.toml` grows. It uses the words of Actions (`needs`), not its
+   format; Actions does not run one job per step (open point 4):
 
-   ```yaml
-   verify:
-     skill: ai-hub:verify
-     needs: [implement]
-     skip_key: pr.head_sha
-     on_failure: block          # or warn
-     loop: {with: implement, max: 3}
-     tools: [...]
-     caps: {max_turns: 60, max_budget_usd: 2}
+   ```toml
+   [steps.verify]
+   needs = ["implement"]
+   input = "pr.head"
+   max_turns = 60
    ```
 8. **Four verdicts:** `pass`, `warn` (the flow goes on, like `continue-on-error`), `fail`, `blocked` (a human must answer).
 
@@ -105,10 +102,37 @@ These ideas are not robust yet. Each needs a closer look before the status becom
      A stale step before `implement` (a human edited the PRD or `spec.md`) stops the chain with a message,
      e.g. "PRD changed after spec; run with `--force spec`". A new `plan.md` can renumber the tasks, so
      resume in `implement` would skip the wrong work.
-3. **Detecting a finished task reliably.** Commit subject `T-n:` or a `Task: T-n` trailer? What if the
-   commit exists but its tests now fail? Explicit commands, not the agent's judgement.
-4. **Where the manifest lives and its format.** In ai-hub or in the target repo? YAML or TOML?
-   How exactly does it map to Actions jobs or a gh-aw workflow?
+3. **Detecting a finished task reliably.** Answered (2026-10-25):
+   - The subject stays `T-n: <task title>` for humans. Each task commit also gets two git trailers:
+     `Task: T-n` and `Plan: <blob SHA of plan.md>`. The subject is free text the agent writes; a trailer
+     is a fixed field.
+   - A task is done when `origin/feature/<key>` has a commit with `Task: T-n` and the current `Plan:`.
+     One fixed command, not the agent's judgement:
+     `git log origin/feature/<key> --format='%(trailers:key=Task,valueonly) %(trailers:key=Plan,valueonly)'`.
+     `Plan:` ties the task to one version of the plan: after `--force plan`, the old `T-2` is not the new `T-2`.
+   - A done commit is trusted, its tests are not run again: a task is committed only when green, and the
+     full test and lint run at the end of `implement` catches anything broken (red → `fail` → the loop).
+   - `implement` pushes after each task commit (decision 3); a commit only on the laptop does not count.
+   - The skill runs the command, not the runner: only `implement` needs the task list, and the skill must
+     work alone in a chat. The runner stays at report level.
+   - Loop runs have no task-level resume: they are short, and a rerun takes the fail list again.
+   - Gap: a crash between code and commit leaves a dirty tree; the runner stops and a human cleans it.
+     A fresh clone per run (open point 8, #9) removes this.
+4. **Where the manifest lives and its format.** Answered (2026-10-26):
+   - **TOML, in `runner/config.toml`.** The runner is Python (ADR-002) and `tomllib` is in the standard
+     library. YAML adds a dependency, only to look like Actions.
+   - **Only what the walk needs now (P-2):** `needs` (replaces `NEXT_STEP` in `run.py`) and `input`, a
+     name the runner maps to one function: `issue.body`, `file:spec.md`, `file:plan.md`, `pr.head`, `pr.merge`.
+     `on_failure` and `loop` come with `warn` and parallel steps (open points 5 and 6).
+   - **Two owners.** ai-hub owns the workflow: steps, `needs`, `input`, caps, tools, `denied`; it is
+     versioned with the plugin. The target repo owns its facts: test and lint commands and their tool rules.
+     The runner reads them only from the target repo's default branch, so a feature branch cannot widen its
+     own permissions, and ai-hub `denied` always wins. Built when a second target repo comes; until then
+     the `[repos.…]` block in `config.toml` stays.
+   - **Actions: one generic job, not one job per step.** The runner walks the steps and knows `needs`.
+     Actions gives a trigger (new report, push to the PR, merge), a disposable VM, and
+     `concurrency: feature-<issue>` as the lock per feature. The job runs `run.py <issue> --once`; no step
+     logic in the workflow YAML (#6). gh-aw is not a manifest format for us; its safe outputs are open point 7.
 5. **What `warn` means per step.** Which findings are a warning, and who reads them later?
 6. **Parallel `verify` and `review`.** A lock per feature; how `implement` takes two `fail` reports at once.
 7. **Who writes to GitHub: the agent or the runner** ("safe outputs"). Ties to #9 and to org policies
