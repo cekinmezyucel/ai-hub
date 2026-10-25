@@ -67,6 +67,7 @@ v0, by hand: this repo is a Claude Code plugin and its own marketplace. Install 
 
 Update after a push with `claude plugin update ai-hub@ai-hub`.
 While editing the skills, use the live copy instead: `claude --plugin-dir <path-to-ai-hub>`.
+In a clone of this repo, turn on the secret hook once: `git config core.hooksPath .githooks` (needs `gitleaks`).
 
 Then, in the target repo:
 
@@ -129,7 +130,8 @@ python3 -m unittest discover -s runner     # runner tests
 5. **Grade the outcome, not the path.** Code graders first, LLM judge second, read the transcripts. Report pass@1 and pass^3.
    ([Demystifying evals](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents))
 6. **No secrets in this repo.** No key files (OIDC), GitHub push protection, a secret scan in CI, a local hook.
-   A pushed secret counts as leaked: rotate first.
+   A pushed secret counts as leaked: rotate first. See [SECURITY.md](SECURITY.md). Target repos call the same
+   scan: `uses: cekinmezyucel/ai-hub/.github/workflows/gitleaks.yml@main`.
 7. **Human gates only where necessary.** A gate is removed by evidence, not by hope: the verify step passes,
    the eval suite shows the step is consistent (pass^k), and the change is low risk. Every skipped gate stays visible in the log.
 8. **Token economy.** Tests on every run, the LLM judge only after tests pass, the full eval suite only when prompts, model,

@@ -2,7 +2,7 @@
 
 # The ai-hub plugin version every step runs with. The runner loads exactly this version
 # with --plugin-dir and refuses to run if it is not installed.
-plugin_version = "0.7.5"
+plugin_version = "0.7.6"
 
 # verify/review fails before the chain stops instead of running implement again.
 loop_cap = 3
@@ -63,6 +63,12 @@ denied = [
   "Bash(git push origin main:*)",
   "Bash(gh pr merge:*)",
   "Bash(rm -rf:*)",
+  "Bash(git commit --no-verify*)",
+  "Bash(git commit * --no-verify*)",
+  "Bash(git commit -n*)",
+  "Bash(git commit * -n*)",
+  "Read(**/.env*)",
+  "Bash(*.env*)",
   "WebFetch",
   "WebSearch",
 ]
