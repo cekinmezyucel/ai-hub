@@ -26,6 +26,20 @@ PR_STEPS = {"verify", "review"}
 MARKER = re.compile(r"<!--\s*ai-hub\s+(.*?)\s*-->")
 CONFIG_FILE = Path(__file__).with_name("config.toml")
 PLUGIN_CACHE = Path("~/.claude/plugins/cache/ai-hub/ai-hub").expanduser()
+# Set by a Claude Code session for its child processes. A step started from /ai-hub:run must not
+# inherit them: it would run as that session's child, with its effort level.
+PARENT_SESSION_ENV = {
+    "CLAUDECODE",
+    "CLAUDE_PID",
+    "CLAUDE_EFFORT",
+    "CLAUDE_CODE_ENTRYPOINT",
+    "CLAUDE_CODE_EXECPATH",
+    "CLAUDE_CODE_SESSION_ID",
+    "CLAUDE_CODE_CHILD_SESSION",
+    "CLAUDE_CODE_SESSION_ATTENDED",
+    "CLAUDE_CODE_MESSAGING_SOCKET",
+    "CLAUDE_CODE_MESSAGING_TOKEN",
+}
 
 
 class RunnerError(Exception):
@@ -180,9 +194,15 @@ def describe(event):
     return lines
 
 
+def step_env(env):
+    """The environment of a step: the runner's own, without the variables of a parent Claude Code session."""
+    return {k: v for k, v in env.items() if k not in PARENT_SESSION_ENV}
+
+
 def run_step(cmd, cwd, log_file):
     result = None
-    with open(log_file, "w") as log, subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, text=True) as proc:
+    env = step_env(os.environ)
+    with open(log_file, "w") as log, subprocess.Popen(cmd, cwd=cwd, env=env, stdout=subprocess.PIPE, text=True) as proc:
         for line in proc.stdout:
             log.write(line)
             try:

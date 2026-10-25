@@ -87,6 +87,12 @@ class ClaudeCommand(unittest.TestCase):
         self.assertIn("only under /tmp/run", prompt)
 
 
+class StepEnv(unittest.TestCase):
+    def test_drops_the_parent_session_but_keeps_the_rest(self):
+        env = {"PATH": "/bin", "CLAUDECODE": "1", "CLAUDE_EFFORT": "high", "CLAUDE_CODE_SESSION_ID": "x"}
+        self.assertEqual(run.step_env(env), {"PATH": "/bin"})
+
+
 def history(*steps):
     """Markers oldest first, from "step:verdict" strings."""
     return [dict(zip(("step", "verdict"), s.split(":"))) for s in steps]

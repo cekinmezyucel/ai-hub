@@ -85,6 +85,13 @@ v1, by hand with the runner: one step per run, as a fresh headless `claude -p`.
 Tools, turn caps and the plugin version come from [`runner/config.toml`](runner/config.toml).
 
 ```
+/ai-hub:run 12                       # in a chat in the target repo: starts the runner below, reports where it stopped
+/ai-hub:run 12 --step spec           # one step only
+```
+
+The command only starts the runner; every step still runs as its own `claude -p`. Without Claude Code:
+
+```
 python3 runner/run.py 12 --repo <path-to-target-repo>              # chain until done, blocked or a gate
 python3 runner/run.py 12 --step spec --repo <path-to-target-repo>  # one step only
 python3 -m unittest discover -s runner     # runner tests
