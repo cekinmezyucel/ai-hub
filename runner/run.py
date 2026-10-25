@@ -311,6 +311,7 @@ def main(argv=None):
 
     try:
         config = load_config(CONFIG_FILE)
+        print(f"ai-hub runner · plugin {config['plugin_version']}", flush=True)
         cwd = args.repo.resolve()
         repo = gh_json(["repo", "view", "--json", "nameWithOwner"], cwd)["nameWithOwner"]
         if subprocess.run(["gh", "issue", "view", str(args.issue)], cwd=cwd, capture_output=True).returncode:

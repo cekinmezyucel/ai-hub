@@ -23,7 +23,8 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
 1. No Issue number in the arguments ⇒ ask for it and stop.
 2. Run in the background (`run_in_background`), from the repo root, exactly this one command:
    `python3 "${CLAUDE_SKILL_DIR}/../../runner/run.py" $ARGUMENTS`
-   Tell the human in one line that it runs and that a step can take many minutes.
+   Read the first line of its output: `ai-hub runner · plugin <version>`. Tell the human in one line
+   that it runs, with that plugin version, and that a step can take many minutes.
 3. Wait for the notification that it finished. Do not poll. If the human asks for progress,
    read the last lines of its output.
 4. Report from the output:
