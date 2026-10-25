@@ -30,7 +30,8 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
 5. **Judge each `AC-n`:**
    - Find the test that covers it (`file::test_name`) and read it.
      It must assert the **Then** part, not something near it.
-   - If no test covers it, check it directly only when cheap and safe (run the app, call the endpoint).
+   - If no test covers it, the result is `unverified`. Do not start the app: the smoke checks in CI
+     run it, and `check` reads them after the deploy.
    - Result: `pass` with evidence, `fail` with what is wrong, or `unverified`.
 6. **Scope (P-2).** Note anything from "Out" that was built.
 7. Post the report: `gh pr comment <pr> --body-file <file>`.

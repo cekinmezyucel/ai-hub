@@ -2,7 +2,7 @@
 
 # The ai-hub plugin version every step runs with. The runner loads exactly this version
 # with --plugin-dir and refuses to run if it is not installed.
-plugin_version = "0.7.3"
+plugin_version = "0.7.4"
 
 # verify/review fails before the chain stops instead of running implement again.
 loop_cap = 3
@@ -18,6 +18,7 @@ log_dir = "~/.cache/ai-hub/runs"
 system_prompt = """
 Run one command per Bash call. Do not chain commands with &&, ||, ; or |, and do not use $(...).
 Run commands from the repo root; do not use cd or git -C.
+Do not start servers or other long-running processes. Tests and the CI smoke checks run the app.
 Write temporary files, such as report bodies, only under {tmp_dir}. Do not delete them.
 """
 
@@ -43,6 +44,7 @@ common = [
   "Bash(git ls-tree:*)",
   "Bash(git remote get-url:*)",
   "Bash(git fetch:*)",
+  "Bash(git ls-remote:*)",
   "Bash(gh repo view:*)",
   "Bash(gh issue view:*)",
   "Bash(gh issue list:*)",
@@ -92,7 +94,13 @@ tools = ["Bash(gh pr create:*)", "Bash(gh pr comment:*)"]
 [steps.verify]
 max_turns = 60
 groups = ["repo"]
-tools = ["Bash(gh pr checkout:*)", "Bash(gh pr diff:*)", "Bash(gh pr comment:*)", "Bash(git checkout:*)"]
+tools = [
+  "Bash(gh pr checkout:*)",
+  "Bash(gh pr diff:*)",
+  "Bash(gh pr comment:*)",
+  "Bash(gh pr checks:*)",
+  "Bash(git checkout:*)",
+]
 
 [steps.review]
 max_turns = 60
@@ -110,4 +118,5 @@ tools = [
   "Bash(.venv/bin/pytest:*)",
   "Bash(.venv/bin/ruff:*)",
   "Bash(source .venv/bin/activate:*)",
+  "Bash(.venv/bin/pip install -r requirements-dev.txt)",
 ]
