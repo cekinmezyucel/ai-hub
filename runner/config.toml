@@ -2,7 +2,7 @@
 
 # The ai-hub plugin version every step runs with. The runner loads exactly this version
 # with --plugin-dir and refuses to run if it is not installed.
-plugin_version = "0.7.0"
+plugin_version = "0.7.1"
 
 # verify/review fails before the chain stops instead of running implement again.
 loop_cap = 3
@@ -40,12 +40,15 @@ common = [
   "Bash(git diff:*)",
   "Bash(git show:*)",
   "Bash(git rev-parse:*)",
+  "Bash(git ls-tree:*)",
+  "Bash(git remote get-url:*)",
   "Bash(git fetch:*)",
   "Bash(gh repo view:*)",
   "Bash(gh issue view:*)",
   "Bash(gh issue list:*)",
   "Bash(gh pr view:*)",
   "Bash(gh pr list:*)",
+  "Bash(gh label list:*)",
   "Bash(gh issue edit:*)",
   "Bash(gh issue comment:*)",
   "Bash(gh label create:*)",
@@ -79,7 +82,7 @@ tools = ["Bash(gh issue develop:*)"]
 
 [steps.plan]
 max_turns = 40
-groups = ["branch"]
+groups = ["branch", "repo"]
 
 [steps.implement]
 max_turns = 150
@@ -93,7 +96,7 @@ tools = ["Bash(gh pr checkout:*)", "Bash(gh pr diff:*)", "Bash(gh pr comment:*)"
 
 [steps.review]
 max_turns = 60
-tools = ["Bash(gh pr diff:*)", "Bash(gh pr comment:*)", "Bash(gh pr ready:*)"]
+tools = ["Bash(gh pr diff:*)", "Bash(gh pr comment:*)", "Bash(gh pr ready:*)", "Bash(gh pr checks:*)"]
 
 [steps.check]
 max_turns = 30
