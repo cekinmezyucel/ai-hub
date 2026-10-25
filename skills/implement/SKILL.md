@@ -107,4 +107,5 @@ Part of #<issue> · Spec: [spec.md](<link>) · Plan: [plan.md](<link>)
 ```
 
 On a loop run, leave out the `Part of #<issue>` line: the PR body already has it.
-Never write `Closes #<issue>`: the feature is done only when `check` passes, and `check` closes the Issue.
+Never write `Closes #<issue>`. The merge still closes the Issue through the linked feature branch;
+`check` reopens it if production does not pass.

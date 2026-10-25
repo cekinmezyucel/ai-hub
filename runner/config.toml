@@ -2,7 +2,7 @@
 
 # The ai-hub plugin version every step runs with. The runner loads exactly this version
 # with --plugin-dir and refuses to run if it is not installed.
-plugin_version = "0.7.4"
+plugin_version = "0.7.5"
 
 # verify/review fails before the chain stops instead of running implement again.
 loop_cap = 3
@@ -108,7 +108,7 @@ tools = ["Bash(gh pr diff:*)", "Bash(gh pr comment:*)", "Bash(gh pr ready:*)", "
 
 [steps.check]
 max_turns = 30
-tools = ["Bash(gh run list:*)", "Bash(gh run view:*)", "Bash(gh issue close:*)"]
+tools = ["Bash(gh run list:*)", "Bash(gh run view:*)", "Bash(gh issue close:*)", "Bash(gh issue reopen:*)"]
 
 # App facts per target repo: the test and lint commands the plan names. Used by the "repo" group.
 [repos."cekinmezyucel/ai-hub-demo"]

@@ -38,8 +38,11 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
    - In CI: read the smoke check log (`gh run view <run id> --log --job <job id>`). Find the smoke test
      for this `AC-n` by the repo's naming rule, and record its name and result. No smoke test ⇒ `not checked`.
 5. Post the report: `gh issue comment <issue> --body-file <file>`.
-6. On `pass`: the feature is done. Close the PRD Issue: `gh issue close <issue> --reason completed`.
-   On `fail` or `blocked`, leave it open.
+6. The merge of a PR from the linked feature branch closes the PRD Issue (GitHub's Development link),
+   before this step runs. Set the Issue state from the verdict:
+   - `pass`: the feature is done. If the Issue is still open, close it: `gh issue close <issue> --reason completed`.
+   - `fail` or `blocked`: the feature is not done. If the Issue is closed, reopen it: `gh issue reopen <issue>`.
+     The report says so in its last line: `Reopened: the merge closed this Issue, but check did not pass.`
 
 ## Rules
 
@@ -67,7 +70,7 @@ The same in a chat and in a headless run (`claude -p`).
 
 - Every `AC-n` is `pass`, `fail` or `not checked`, with evidence or a reason.
 - All test data you created is deleted.
-- The report is posted.
+- The report is posted, and the Issue is closed on `pass`, open on `fail` or `blocked`.
 
 ## Links and labels
 
