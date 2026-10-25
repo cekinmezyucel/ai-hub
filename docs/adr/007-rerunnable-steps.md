@@ -1,13 +1,12 @@
 # ADR-007: Rerunnable steps: cattle steps, GitHub as the session log
 
-Status: **Accepted** (2026-10-26) — all open points answered (see the end).
-Date: 2026-10-22 · Issues: #15 (split from #7) · Related: #4, #6, #9, #13
+Status: **Accepted** (2026-10-26)
+Date: 2026-10-22 · Issues: #15 (split from #7; [design notes](https://github.com/cekinmezyucel/ai-hub/issues/15#issuecomment-6404893740)) · Related: [ADR-004](004-github-session-log-actions-sandbox.md), [ADR-005](005-step-interface.md), #9, #13, #18
 
 ## Context
 
 A feature moves through the steps `spec` → `plan` → `implement` → `verify` → `review` → `check`.
-They should behave like the jobs of a GitHub Actions workflow: dependent on
-earlier steps, and rerunnable alone or as a whole workflow.
+Each step must be safe to run again, alone or as part of the whole chain, after a crash or a fix.
 
 The runs in #7 showed what breaks today:
 
@@ -18,8 +17,7 @@ The runs in #7 showed what breaks today:
 
 [Scaling Managed Agents](https://www.anthropic.com/research/managed-agents) (Anthropic, 2026) solves the
 same problem with "cattle, not pets": the harness and the container can be thrown away, because the
-session log outside them is durable. A new harness calls `wake(sessionId)`, reads the log and
-"resume[s] from the last event".
+session log outside them is durable.
 
 ## Options
 
@@ -30,147 +28,30 @@ session log outside them is durable. A new harness calls `wake(sessionId)`, read
 | C. GitHub Actions only, now | `needs`, `concurrency`, re-run for free. | No manual runs to learn and debug the flow first (#7 design rule). |
 | D. All-or-nothing steps, no skip | Simplest. | Throws away finished work on every rerun; ignores the log. |
 
-How others solve it (research, 2026-10-22):
-GitHub Actions (`needs`, `if`, `continue-on-error`, re-run failed jobs),
-Prefect / Dagster / Nx / Bazel (skip when the hash of the inputs is the same),
-Temporal / Inngest / DBOS (a log of finished steps; a rerun gets the saved result),
-Tekton (`runAfter`, `when`, `onError: continue`), LangGraph / Mastra (checkpoint, resume, interrupt for a human),
-Kubernetes controllers (observe, then change only what differs),
-[gh-aw](https://github.github.com/gh-aw/reference/safe-outputs/) (the agent is read-only; a separate job writes).
-
 ## Decision
 
 Option A.
 
-1. **Everything that runs is cattle.** Each `claude -p`, `run.py`, the checkout and the temp dir can be
-   thrown away. A failed run is run again, never fixed by hand.
-2. **GitHub is the only durable state:** Issue and PR comments with markers, and commits on the remote
-   feature branch. No pets: nothing on the laptop must survive a run.
-3. **A result counts only once it is in GitHub.** Push after each task commit. Post the report as soon
-   as the step ends. A file in a temp dir is not an output.
-4. **A step reads its state only from GitHub,** never from the local checkout.
-5. **Skip:** the marker names the step's input, e.g. `step=verify input=<head sha>`. The runner walks the
-   steps in order and runs the first one whose report is missing or stale (its `input=` is not the current
-   input), like a Kubernetes controller. `--force` runs a step again.
-6. **Resume:** a rerun continues from what GitHub shows. For `implement`: a task with a commit on the
-   remote branch whose `Task:` and `Plan:` trailers match is done (open point 3); an open PR is reused.
-7. **One step manifest:** `runner/config.toml` grows. It uses the words of Actions (`needs`), not its
-   format; Actions does not run one job per step (open point 4):
-
-   ```toml
-   [steps.verify]
-   needs = ["implement"]
-   input = "pr.head"
-   max_turns = 60
-   ```
-8. **Three verdicts stay:** `pass`, `fail`, `blocked`. No `warn` (open point 5).
+1. **Everything that runs is cattle.** `claude -p`, `run.py`, the checkout and the temp dir can be thrown
+   away. Each step run works in a fresh clone. A failed run is run again, never fixed by hand.
+2. **GitHub is the only durable state:** report markers on the Issue and PR, and commits on the remote
+   feature branch. A step reads its state only from there, and the runner decides only from there.
+   Transcripts and traces are for humans (#13, #11), never an input to a decision.
+3. **A result counts only once it is on GitHub.** Push after each commit; post the report when the step ends.
+4. **One rerun rule for every step:** make only the outputs that are missing (ADR-005 section 11).
+   We restart a step and skip finished work; we do not resume its conversation (that is #18).
+5. **Each report names its input.** The runner walks the steps in order and runs the first one whose report
+   is missing or stale, like a Kubernetes controller. Stale steps rerun on their own only inside the
+   `implement` ↔ `verify` / `review` loop; a stale step before `implement` stops the chain for a human.
+6. **Keep it simple.** Three verdicts (`pass`, `fail`, `blocked`), no `warn`. Steps run one after the other.
+   The agent keeps writing to GitHub until its token leaves the sandbox (#9).
 
 ## Consequences
 
-- A whole-workflow rerun is cheap: finished steps skip.
-- Every skill must name its input in the marker and push early. Skills get a few more lines.
+- A whole-chain rerun is cheap: finished steps skip.
+- Every skill names its input in the marker and pushes early. Skills get a few more lines.
 - Idempotent means "safe to rerun, ends in the same state", not "same output": an LLM writes different
-  text each time. That is why the skip key is the input, not the output.
-- `runner/config.toml` turns into the manifest when chaining needs it.
-- Order to build: resume in `implement` (6) and push per task (3) first, then markers with inputs and
-  skip (5), then the manifest (7).
-
-## Investigation
-
-These points were open when the ADR was proposed. Each was answered before it became Accepted.
-
-1. **Resume or restart, per step.** Answered (2026-10-25): one rerun rule for all steps, see
-   [ADR-005](005-step-interface.md) section 11. A step makes only the missing outputs; in practice only
-   `implement` skips work, the other steps run again.
-2. **The input of each step.** Answered (2026-10-25): the input is a hash or SHA of exactly what the step reads.
-
-   | Step | `input=` |
-   |------|----------|
-   | `spec` | sha256 of the PRD Issue body, first 12 characters (the body holds the human's answers too; not `updatedAt`, which changes on every comment) |
-   | `plan` | blob SHA of `spec.md` on the remote feature branch |
-   | `implement`, first run | blob SHA of `plan.md` on the remote feature branch |
-   | `implement`, loop run | PR head SHA at the start of the run |
-   | `verify`, `review` | PR head SHA |
-   | `check` | merge commit SHA |
-
-   - The runner computes the input with fixed commands before the run and passes it to the skill; the skill
-     copies it into its marker. A skill alone in a chat runs the same command. A push during the run cannot
-     mislabel the report.
-   - Staleness follows the chain: a new `spec.md` makes `plan` stale; a push to the PR makes `verify` stale,
-     which is also the fail loop.
-   - The runner reruns a stale step on its own only inside the loop (`implement` ↔ `verify` / `review`).
-     A stale step before `implement` (a human edited the PRD or `spec.md`) stops the chain with a message,
-     e.g. "PRD changed after spec; run with `--force spec`". A new `plan.md` can renumber the tasks, so
-     resume in `implement` would skip the wrong work.
-3. **Detecting a finished task reliably.** Answered (2026-10-25):
-   - The subject stays `T-n: <task title>` for humans. Each task commit also gets two git trailers:
-     `Task: T-n` and `Plan: <blob SHA of plan.md>`. The subject is free text the agent writes; a trailer
-     is a fixed field.
-   - A task is done when `origin/feature/<key>` has a commit with `Task: T-n` and the current `Plan:`.
-     One fixed command, not the agent's judgement:
-     `git log origin/feature/<key> --format='%(trailers:key=Task,valueonly) %(trailers:key=Plan,valueonly)'`.
-     `Plan:` ties the task to one version of the plan: after `--force plan`, the old `T-2` is not the new `T-2`.
-   - A done commit is trusted, its tests are not run again: a task is committed only when green, and the
-     full test and lint run at the end of `implement` catches anything broken (red → `fail` → the loop).
-   - `implement` pushes after each task commit (decision 3); a commit only on the laptop does not count.
-   - The skill runs the command, not the runner: only `implement` needs the task list, and the skill must
-     work alone in a chat. The runner stays at report level.
-   - Loop runs have no task-level resume: they are short, and a rerun takes the fail list again.
-   - A crash between code and commit leaves a dirty tree. The fresh clone per run (open point 8) throws
-     it away; no human cleans up.
-4. **Where the manifest lives and its format.** Answered (2026-10-26):
-   - **TOML, in `runner/config.toml`.** The runner is Python (ADR-002) and `tomllib` is in the standard
-     library. YAML adds a dependency, only to look like Actions.
-   - **Only what the walk needs now (P-2):** `needs` (replaces `NEXT_STEP` in `run.py`) and `input`, a
-     name the runner maps to one function: `issue.body`, `file:spec.md`, `file:plan.md`, `pr.head`, `pr.merge`.
-     No `loop` key: the global `loop_cap` stays (open point 6). No `on_failure` (open point 5).
-   - **Two owners.** ai-hub owns the workflow: steps, `needs`, `input`, caps, tools, `denied`; it is
-     versioned with the plugin. The target repo owns its facts: test and lint commands and their tool rules.
-     The runner reads them only from the target repo's default branch, so a feature branch cannot widen its
-     own permissions, and ai-hub `denied` always wins. Built when a second target repo comes; until then
-     the `[repos.…]` block in `config.toml` stays.
-   - **Actions: one generic job, not one job per step.** The runner walks the steps and knows `needs`.
-     Actions gives a trigger (new report, push to the PR, merge), a disposable VM, and
-     `concurrency: feature-<issue>` as the lock per feature. The job runs `run.py <issue> --once`; no step
-     logic in the workflow YAML (#6). gh-aw is not a manifest format for us; its safe outputs are open point 7.
-5. **What `warn` means per step.** Answered (2026-10-26): no `warn`.
-   - Notes that do not block already live inside a `pass` report: `review` lists `minor` findings, `check`
-     can leave an AC unchecked, `spec` writes assumptions (`A-n`). A fourth verdict adds nothing for the runner.
-   - Every `fail` still goes back to `implement` or stops the chain. No step continues on `fail`.
-   - No `on_failure` in the manifest. It comes only when a real optional step exists (P-2).
-6. **Parallel `verify` and `review`.** Answered (2026-10-26): no, they stay one after the other. Keep it simple.
-   - Small gain: a few minutes per loop. Real cost: a `review` next to a failing `verify` wastes tokens, a PR
-     could be marked ready while `verify` fails, and `implement` would have to merge two fail reports.
-   - A lock per feature is still needed, because two runs at once could both see a missing step and post
-     two reports. On Actions: `concurrency: group: ai-hub-<issue>`, `cancel-in-progress: false`. Dropping
-     an older waiting run is safe: the runner reads all state from GitHub. On the laptop: no lock for now.
-7. **Who writes to GitHub: the agent or the runner** ("safe outputs"). Answered (2026-10-26): the agent,
-   as today.
-   - Safe outputs pay off only for security, and only when all writes move, including `git push`. That needs
-     the token out of the sandbox: #9. Until then the tool allowlist and `denied` in `config.toml` stay the
-     net, and the allowlist is the human's approval given in advance for a headless run.
-   - The runner checks `input=` after each run: the new report's `input=` must be the value it passed in,
-     or the chain stops. Without it, a wrong copy makes a step run again and again, or marks a commit
-     pushed during the run as checked when it was not.
-8. **A fresh clone per run** instead of the local checkout. Answered (2026-10-26): yes, built in #15.
-   - The runner clones the target repo into a temp dir (`git clone --filter=blob:none`), checks out the
-     step's branch and runs `claude -p` there. On success the dir is deleted; on failure it is kept and its
-     path printed, for debugging only. The next run never uses it.
-   - Gives: real cattle (a crash between code and commit costs nothing), the same start as an Actions
-     checkout, and the human's own checkout is never touched (`check_clean` and the "ahead" check go).
-   - Costs: each run sets up its own `.venv`, as Actions does anyway.
-   - Not security: the agent still has the human's `gh` token and home dir (#9). User `CLAUDE.md` and
-     auth differences are #8.
-9. **Is GitHub a rich enough log?** Managed Agents logs every event; we keep only reports and commits.
-   Answered (2026-10-26): enough for rerun, not for learning.
-
-   | Use | Needs | In GitHub? |
-   |-----|-------|------------|
-   | Choose the next step (walk) | markers with `input=` | yes |
-   | Resume `implement` | commits with trailers, open PR | yes |
-   | Resume inside a step (`wake`) | every event | no; not planned (#18) |
-   | Learn why a step failed (README principle 5) | full transcript | no → #13 |
-   | Cost, turns, time | numbers per run | no → #11 |
-
-   - The runner decides only from GitHub. Transcripts and traces are for humans, never an input to the walk:
-     one source of truth, and a lost transcript cannot break a rerun.
+  text each time. That is why staleness is judged on the input, not the output.
+- A human's change upstream (the PRD, `spec.md`) never cascades on its own; a human reruns from there.
+- GitHub is enough to rerun, not to learn why a step failed: transcripts are #13.
+- Two runs on one feature at the same time could duplicate a report: Actions needs a lock per feature (#6).

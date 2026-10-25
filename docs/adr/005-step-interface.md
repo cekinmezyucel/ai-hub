@@ -81,7 +81,7 @@ Exactly one report per run, posted when the step ends.
 ```
 
 - The first line is the marker. Extra keys are allowed (today `risk=` from `plan`).
-- Every marker has `input=`: a hash or SHA of what the step read (ADR-007, open point 2). The runner passes
+- Every marker has `input=`: a hash or SHA of what the step read (ADR-007; per step in the [#15 design notes](https://github.com/cekinmezyucel/ai-hub/issues/15#issuecomment-6404893740)). The runner passes
   it in; a skill alone in a chat computes it with the same command.
 - `feature=` is left out only when no feature key exists yet (`prd`, new mode).
 - A step that reports on the PR also posts a one-line pointer on the PRD Issue, with no marker:
@@ -95,7 +95,7 @@ Exactly one report per run, posted when the step ends.
 | `fail` | back to `implement` | `implement`, `verify`, `review`, `check` |
 | `blocked` | a human must answer first; the question is in the report | every step |
 
-No fourth verdict: ADR-007 drops `warn` (open point 5).
+No fourth verdict: ADR-007 drops `warn`.
 
 ### 7. Links and labels
 Files are links on their branch (`#L<n>` for a line), PRs are `#<pr>`, CI runs are their URL.
@@ -125,7 +125,7 @@ continues the old conversation.
 |------|-------------------------------------|-------|
 | `verify`, `review`, `check` | nothing: the report is the only output | runs fully again |
 | `spec`, `plan` | branch and file pushed, no report | reuses the branch, writes the file again, posts the report |
-| `implement` | some tasks committed, PR missing | skips tasks with a `Task: T-n` commit for the current plan on the remote branch (ADR-007), reuses an open PR |
+| `implement` | some tasks committed, PR missing | skips tasks with a `Task: T-n` commit for the current plan on the remote branch ([#15 design notes](https://github.com/cekinmezyucel/ai-hub/issues/15#issuecomment-6404893740)), reuses an open PR |
 
 - A file without a report is not trusted: the step cannot know it was complete. Writing it again
   costs little; the new commit replaces it.
