@@ -144,8 +144,14 @@ These ideas are not robust yet. Each needs a closer look before the status becom
    - A lock per feature is still needed, because two runs at once could both see a missing step and post
      two reports. On Actions: `concurrency: group: ai-hub-<issue>`, `cancel-in-progress: false`. Dropping
      an older waiting run is safe: the runner reads all state from GitHub. On the laptop: no lock for now.
-7. **Who writes to GitHub: the agent or the runner** ("safe outputs"). Ties to #9 and to org policies
-   such as "ask before `gh pr create`".
+7. **Who writes to GitHub: the agent or the runner** ("safe outputs"). Answered (2026-10-26): the agent,
+   as today.
+   - Safe outputs pay off only for security, and only when all writes move, including `git push`. That needs
+     the token out of the sandbox: #9. Until then the tool allowlist and `denied` in `config.toml` stay the
+     net, and the allowlist is the human's approval given in advance for a headless run.
+   - The runner checks `input=` after each run: the new report's `input=` must be the value it passed in,
+     or the chain stops. Without it, a wrong copy makes a step run again and again, or marks a commit
+     pushed during the run as checked when it was not.
 8. **A fresh clone per run** instead of the local checkout (#9).
 9. **Is GitHub a rich enough log?** Managed Agents logs every event; we keep only reports and commits.
    Transcripts are #13.
