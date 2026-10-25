@@ -18,6 +18,8 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
   - **In CI:** the service runs only inside a CI job that starts it and runs smoke checks against it.
     You need the workflow and job name.
   - Not found ⇒ verdict `blocked`.
+- Optional: `input=<value>`, added by the caller (the runner). Copy it unchanged into the report marker.
+  Without it, leave `input=` out; the runner then treats the report as stale (ADR-007).
 
 ## Output
 
@@ -90,7 +92,7 @@ The PRD Issue is where a human navigates from. The same rules in every step.
 ## Report
 
 ```markdown
-<!-- ai-hub step=check feature=<feature key> verdict=pass|fail|blocked -->
+<!-- ai-hub step=check feature=<feature key> verdict=pass|fail|blocked input=<input> -->
 ## check · pass | fail | blocked
 
 Service: <base URL, or CI run URL> · Version: <version or commit, or "not confirmed">

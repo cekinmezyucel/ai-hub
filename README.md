@@ -91,9 +91,11 @@ Tools, turn caps and the plugin version come from [`runner/config.toml`](runner/
 ```
 
 The command only starts the runner; every step still runs as its own `claude -p`.
-Before each step the runner fetches and fast-forwards the step's branch (the feature branch once it is
-on GitHub, else the default branch; always the default branch for `check`); after it, the step's commits
-must be on GitHub, or the chain stops. Without Claude Code:
+The runner walks the steps and runs the first one whose report is missing or stale: each report names the
+input it read (`input=`), and a step is stale when that input has changed ([ADR-007](docs/adr/007-rerunnable-steps.md)).
+Each step runs in a fresh clone on its branch (the feature branch once it is on GitHub, else the default
+branch; always the default branch for `check`), so a crashed run leaves nothing to clean up. After it,
+the step's commits must be on GitHub, or the chain stops. Without Claude Code:
 
 ```
 python3 runner/run.py 12 --repo <path-to-target-repo>              # chain until done, blocked or a gate

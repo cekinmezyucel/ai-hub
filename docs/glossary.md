@@ -36,7 +36,9 @@ A `fail` from `verify` or `review` goes back to `implement`.
 | **plan** | The how: commands, tasks, traceability. File `plan.md`. |
 | **contract** | The public interface of a feature: endpoints, data shapes, errors, CLI flags, config keys. |
 | **report** | The one comment each step posts when it ends. Starts with a marker. |
-| **marker** | First line of every report: `<!-- ai-hub step=<step> feature=<feature key> verdict=<verdict> -->`. Lets the pipeline read the result. |
+| **marker** | First line of every report: `<!-- ai-hub step=<step> feature=<feature key> verdict=<verdict> input=<input> -->`. Lets the pipeline read the result. |
+| **input** | What a step read, as a hash or SHA, set by the runner: the PRD Issue body (`spec`), `spec.md` (`plan`), `plan.md` (`implement`), the PR head (`verify`, `review`), the merge commit (`check`). Named in the marker. |
+| **stale** | A report whose `input=` is not the step's current input, or that has none. The runner runs a stale step again, or stops for a human before `implement`. |
 | **verdict** | The result of a step: `pass` (next step may run), `fail` (go back to `implement`), `blocked` (a human must answer first). |
 | **done when** | The list at the end of each skill, and in each task of `plan.md`. Every item must be true before the step posts its report. |
 | **done** | A step is done when its "Done when" list is true and its report is posted; the verdict then says what comes next. A feature is done when `check` posts `pass` on the PRD Issue. |

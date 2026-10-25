@@ -12,6 +12,8 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
 ## Input
 
 - The PRD Issue in the target repo: number or URL.
+- Optional: `input=<value>`, added by the caller (the runner). Copy it unchanged into the report marker.
+  Without it, leave `input=` out; the runner then treats the report as stale (ADR-007).
 
 ## Output
 
@@ -117,7 +119,7 @@ The PRD Issue is where a human navigates from. The same rules in every step.
 ## Report
 
 ```markdown
-<!-- ai-hub step=spec feature=<feature key> verdict=pass|blocked -->
+<!-- ai-hub step=spec feature=<feature key> verdict=pass|blocked input=<input> -->
 **spec** · pass | blocked · [spec.md](<link>) on `feature/<feature key>`
 <n> acceptance criteria · <n> assumptions · <n> open questions
 

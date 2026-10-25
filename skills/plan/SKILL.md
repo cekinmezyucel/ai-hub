@@ -12,6 +12,8 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
 ## Input
 
 - The feature key or the PRD Issue number. `spec.md` is in the feature folder on the feature branch.
+- Optional: `input=<value>`, added by the caller (the runner). Copy it unchanged into the report marker.
+  Without it, leave `input=` out; the runner then treats the report as stale (ADR-007).
 
 ## Output
 
@@ -118,7 +120,7 @@ The PRD Issue is where a human navigates from. The same rules in every step.
 ## Report
 
 ```markdown
-<!-- ai-hub step=plan feature=<feature key> verdict=pass|blocked risk=low|medium|high -->
+<!-- ai-hub step=plan feature=<feature key> verdict=pass|blocked risk=low|medium|high input=<input> -->
 **plan** · pass | blocked · [plan.md](<link>) · <n> tasks · risk <level>
 
 <if blocked: what a human must provide>

@@ -82,7 +82,7 @@ Exactly one report per run, posted when the step ends.
 
 - The first line is the marker. Extra keys are allowed (today `risk=` from `plan`).
 - Every marker has `input=`: a hash or SHA of what the step read (ADR-007; per step in the [#15 design notes](https://github.com/cekinmezyucel/ai-hub/issues/15#issuecomment-6404893740)). The runner passes
-  it in; a skill alone in a chat computes it with the same command.
+  it in; a skill alone in a chat leaves it out, and the runner treats that report as stale.
 - `feature=` is left out only when no feature key exists yet (`prd`, new mode).
 - A step that reports on the PR also posts a one-line pointer on the PRD Issue, with no marker:
   `**<step>** · <verdict> · [report](<report URL>) on #<pr>`.

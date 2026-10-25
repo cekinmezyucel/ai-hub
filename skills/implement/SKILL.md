@@ -14,6 +14,8 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
 One of:
 - The feature key or PRD Issue number: first run, build the whole plan.
 - A PR whose latest `verify` or `review` report has verdict `fail`: loop run, fix that report.
+- Optional: `input=<value>`, added by the caller (the runner). Copy it unchanged into the report marker.
+  Without it, leave `input=` out; the runner then treats the report as stale (ADR-007).
 
 ## Output
 
@@ -97,7 +99,7 @@ The PRD Issue is where a human navigates from. The same rules in every step.
 ## Report
 
 ```markdown
-<!-- ai-hub step=implement feature=<feature key> verdict=pass|fail|blocked -->
+<!-- ai-hub step=implement feature=<feature key> verdict=pass|fail|blocked input=<input> -->
 ## implement · pass | fail | blocked
 
 Part of #<issue> · Spec: [spec.md](<link>) · Plan: [plan.md](<link>)

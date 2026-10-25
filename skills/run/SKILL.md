@@ -8,15 +8,17 @@ disable-model-invocation: true
 # run: PRD Issue → runner → where it stopped
 
 This command does no step itself. It starts the runner that ships with this plugin, the same one
-GitHub Actions calls. The runner reads the report markers on GitHub, runs the next step as a fresh
-`claude -p` with the pinned plugin version, and repeats. All chain logic lives in the runner.
+GitHub Actions calls. The runner reads the report markers on GitHub, walks the steps in order, runs the
+first one whose report is missing or stale as a fresh `claude -p` in a fresh clone, with the pinned plugin
+version, and repeats. All chain logic lives in the runner.
 
 Words follow `../../docs/glossary.md` (relative to this skill's folder).
 
 ## Input
 
 - `$ARGUMENTS`: the PRD Issue number, and optionally `--step <step>` or `--max-runs <n>`.
-- The current directory is the target repo. Its working tree must be clean.
+- The current directory is a checkout of the target repo. The runner only reads which repo it is;
+  it never changes it.
 
 ## Steps
 
@@ -33,7 +35,8 @@ Words follow `../../docs/glossary.md` (relative to this skill's folder).
    - the last line: `done:`, `stopped:` or `runner:`
    - what the human does next: at the merge gate, merge the PR and run `/ai-hub:run <issue>` again;
      on `blocked`, answer the report (for example with `/ai-hub:prd <issue>`), then run again;
-     on a runner error, the error.
+     on a stale step, decide, then run again with `--step <step>`;
+     on a runner error, the error and the `kept for debugging:` path, if there is one.
 
 ## Rules
 

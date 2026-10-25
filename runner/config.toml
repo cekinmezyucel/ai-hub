@@ -83,21 +83,36 @@ branch = [
   "Bash(git push:*)",
 ]
 
+# The steps. The runner walks them in the order of `needs` and runs the first one whose report is
+# missing or stale. `input` names what the step reads; the runner passes its current value to the
+# step and expects it back in the report marker (ADR-007):
+#   issue.body    sha256 of the PRD Issue body, first 12 characters
+#   file:spec.md  blob SHA of spec.md on the feature branch on GitHub (same for file:plan.md)
+#   pr.head       head commit of the open PR
+#   pr.merge      merge commit of the merged PR
 [steps.spec]
+needs = []
+input = "issue.body"
 max_turns = 30
 groups = ["branch"]
 tools = ["Bash(gh issue develop:*)"]
 
 [steps.plan]
+needs = ["spec"]
+input = "file:spec.md"
 max_turns = 40
 groups = ["branch", "repo"]
 
 [steps.implement]
+needs = ["plan"]
+input = "file:plan.md"
 max_turns = 150
 groups = ["branch", "repo"]
 tools = ["Bash(gh pr create:*)", "Bash(gh pr comment:*)"]
 
 [steps.verify]
+needs = ["implement"]
+input = "pr.head"
 max_turns = 60
 groups = ["repo"]
 tools = [
@@ -109,15 +124,25 @@ tools = [
 ]
 
 [steps.review]
+needs = ["verify"]
+input = "pr.head"
 max_turns = 60
 tools = ["Bash(gh pr diff:*)", "Bash(gh pr comment:*)", "Bash(gh pr ready:*)", "Bash(gh pr checks:*)"]
 
 [steps.check]
+needs = ["review"]
+input = "pr.merge"
 max_turns = 30
 tools = ["Bash(gh run list:*)", "Bash(gh run view:*)", "Bash(gh issue close:*)", "Bash(gh issue reopen:*)"]
 
-# App facts per target repo: the test and lint commands the plan names. Used by the "repo" group.
+# App facts per target repo. `setup` runs in each fresh clone before the step (no agent, no shell).
+# `tools`: the test and lint commands the plan names, used by the "repo" group.
 [repos."cekinmezyucel/ai-hub-demo"]
+setup = [
+  "git config core.hooksPath .githooks",
+  "python3 -m venv .venv",
+  ".venv/bin/pip install -q -r requirements-dev.txt",
+]
 tools = [
   "Bash(pytest:*)",
   "Bash(ruff:*)",
