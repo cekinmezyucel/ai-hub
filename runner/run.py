@@ -181,6 +181,61 @@ def check_clean(cwd):
         raise RunnerError(f"working tree in {cwd} is not clean. State lives in GitHub: commit or stash first")
 
 
+def git(args, cwd):
+    return subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True, text=True).stdout.strip()
+
+
+def has_ref(ref, cwd):
+    return subprocess.run(["git", "rev-parse", "--verify", "--quiet", ref], cwd=cwd, capture_output=True).returncode == 0
+
+
+def remote_feature_branch(issue, cwd):
+    """The feature branch of the Issue on GitHub (after a fetch), or None."""
+    out = git(["branch", "-r", "--list", f"origin/feature/{issue}-*", "--format=%(refname:lstrip=3)"], cwd)
+    names = out.split()
+    if len(names) > 1:
+        raise RunnerError(f"more than one feature branch for Issue #{issue} on GitHub: {names}")
+    return names[0] if names else None
+
+
+def checkout_target(step, feature, default):
+    """check reads the merged feature on the default branch. Every other step works on the feature branch
+    once it is on GitHub; spec creates it from the default branch."""
+    return default if step == "check" or feature is None else feature
+
+
+def prepare_checkout(step, issue, cwd, default):
+    """Start every step from GitHub, as a fresh checkout in Actions would: fetch, switch to the step's
+    branch and fast-forward it. Local commits that are not on GitHub stop the run; nothing is reset."""
+    check_clean(cwd)
+    git(["fetch", "origin", "--prune"], cwd)
+    branch = checkout_target(step, remote_feature_branch(issue, cwd), default)
+    if not has_ref(f"refs/heads/{branch}", cwd):
+        git(["switch", "--track", f"origin/{branch}"], cwd)
+    else:
+        git(["switch", branch], cwd)
+        ahead, behind = map(int, git(["rev-list", "--left-right", "--count", f"{branch}...origin/{branch}"], cwd).split())
+        if ahead:
+            raise RunnerError(f"local {branch} has {ahead} commit(s) that are not on GitHub. Push or drop them first")
+        if behind:
+            git(["merge", "--ff-only", f"origin/{branch}"], cwd)
+    print(f"checkout: {branch} at {git(['rev-parse', '--short', 'HEAD'], cwd)}", flush=True)
+
+
+def check_pushed(step, cwd):
+    """A step's work counts only once it is on GitHub: the next step, or an Actions run, starts from there."""
+    if git(["status", "--porcelain"], cwd):
+        raise RunnerError(f"{step} left uncommitted changes in {cwd}. The next step would not see them")
+    branch = git(["branch", "--show-current"], cwd)
+    if not branch:
+        return
+    if not has_ref(f"refs/remotes/origin/{branch}", cwd):
+        raise RunnerError(f"{step} left branch {branch}, which is not on GitHub")
+    ahead = int(git(["rev-list", "--count", f"origin/{branch}..HEAD"], cwd))
+    if ahead:
+        raise RunnerError(f"{step} left {ahead} commit(s) on {branch} that are not on GitHub")
+
+
 def describe(event):
     """One short line per tool call, so a human can follow the run."""
     if event.get("type") != "assistant":
@@ -252,7 +307,8 @@ def wait_for_ci(sha, cwd, tries=10):
 
 def run_one(config, step, issue, cwd, repo):
     """Run one step as a fresh claude -p. Returns its new report, or None if it posted none."""
-    check_clean(cwd)
+    default = gh_json(["repo", "view", "--json", "defaultBranchRef"], cwd)["defaultBranchRef"]["name"]
+    prepare_checkout(step, issue, cwd, default)
     arg = step_argument(step, issue, open_pr_number(find_pr(issue, cwd)))
     tmp_dir = Path(tempfile.mkdtemp(prefix=f"ai-hub-{step}-"))
     cmd = claude_command(config, step, arg, repo, plugin_dir(config), tmp_dir)
@@ -278,6 +334,7 @@ def run_one(config, step, issue, cwd, repo):
         print(f"no new {step} report on #{issue} or its PR")
     else:
         print(f"report: {step} · {report.get('verdict')} · {report['url']}")
+    check_pushed(step, cwd)
     return report
 
 

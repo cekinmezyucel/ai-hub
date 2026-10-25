@@ -89,7 +89,10 @@ Tools, turn caps and the plugin version come from [`runner/config.toml`](runner/
 /ai-hub:run 12 --step spec           # one step only
 ```
 
-The command only starts the runner; every step still runs as its own `claude -p`. Without Claude Code:
+The command only starts the runner; every step still runs as its own `claude -p`.
+Before each step the runner fetches and fast-forwards the step's branch (the feature branch once it is
+on GitHub, else the default branch; always the default branch for `check`); after it, the step's commits
+must be on GitHub, or the chain stops. Without Claude Code:
 
 ```
 python3 runner/run.py 12 --repo <path-to-target-repo>              # chain until done, blocked or a gate

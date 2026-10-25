@@ -1,4 +1,8 @@
+import io
+import subprocess
+import tempfile
 import unittest
+from contextlib import redirect_stdout
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -144,6 +148,78 @@ class NextAction(unittest.TestCase):
 
     def test_check_fail_stops(self):
         self.assertEqual(self.next(["review:pass", "check:fail"], MERGED_PR)[0], "stop")
+
+
+class CheckoutTarget(unittest.TestCase):
+    def test_spec_starts_from_the_default_branch(self):
+        self.assertEqual(run.checkout_target("spec", None, "main"), "main")
+
+    def test_later_steps_work_on_the_feature_branch(self):
+        self.assertEqual(run.checkout_target("plan", "feature/5-x", "main"), "feature/5-x")
+
+    def test_check_reads_the_default_branch(self):
+        self.assertEqual(run.checkout_target("check", "feature/5-x", "main"), "main")
+
+
+class Handover(unittest.TestCase):
+    """Two clones of one origin: the runner's checkout, and the place where the last step ran."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = Path(tmp.name)
+        self.sh(root, "git", "init", "-q", "--bare", "-b", "main", "origin.git")
+        for name in ("local", "elsewhere"):
+            self.sh(root, "git", "clone", "-q", "origin.git", name)
+            self.sh(root / name, "git", "config", "user.email", "t@t")
+            self.sh(root / name, "git", "config", "user.name", "t")
+        self.local, self.elsewhere = root / "local", root / "elsewhere"
+        self.commit(self.elsewhere, "readme")
+        self.sh(self.elsewhere, "git", "push", "-q", "origin", "main")
+
+    def sh(self, cwd, *args):
+        subprocess.run(args, cwd=cwd, check=True, capture_output=True)
+
+    def commit(self, cwd, name):
+        (cwd / name).write_text(name)
+        self.sh(cwd, "git", "add", name)
+        self.sh(cwd, "git", "commit", "-q", "-m", name)
+
+    def head(self, cwd):
+        return run.git(["rev-parse", "HEAD"], cwd)
+
+    def test_next_step_starts_from_the_pushed_feature_branch(self):
+        self.sh(self.elsewhere, "git", "switch", "-q", "-c", "feature/5-x")
+        self.commit(self.elsewhere, "spec.md")
+        self.sh(self.elsewhere, "git", "push", "-q", "origin", "feature/5-x")
+        with redirect_stdout(io.StringIO()):
+            run.prepare_checkout("plan", 5, self.local, "main")
+        self.assertEqual(run.git(["branch", "--show-current"], self.local), "feature/5-x")
+        self.assertEqual(self.head(self.local), self.head(self.elsewhere))
+
+    def test_check_fast_forwards_the_default_branch(self):
+        self.sh(self.local, "git", "fetch", "-q")
+        self.sh(self.local, "git", "switch", "-q", "main")
+        self.commit(self.elsewhere, "merge")
+        self.sh(self.elsewhere, "git", "push", "-q", "origin", "main")
+        with redirect_stdout(io.StringIO()):
+            run.prepare_checkout("check", 5, self.local, "main")
+        self.assertEqual(self.head(self.local), self.head(self.elsewhere))
+
+    def test_local_commits_not_on_github_stop_the_run(self):
+        self.sh(self.local, "git", "fetch", "-q")
+        self.sh(self.local, "git", "switch", "-q", "main")
+        self.commit(self.local, "unpushed")
+        with self.assertRaisesRegex(run.RunnerError, "not on GitHub"):
+            run.prepare_checkout("spec", 5, self.local, "main")
+
+    def test_a_step_that_did_not_push_stops_the_chain(self):
+        self.sh(self.local, "git", "fetch", "-q")
+        self.sh(self.local, "git", "switch", "-q", "main")
+        run.check_pushed("plan", self.local)
+        self.commit(self.local, "plan.md")
+        with self.assertRaisesRegex(run.RunnerError, "plan left 1 commit"):
+            run.check_pushed("plan", self.local)
 
 
 if __name__ == "__main__":
