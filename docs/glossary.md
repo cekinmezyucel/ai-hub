@@ -43,6 +43,7 @@ A `fail` from `verify` or `review` goes back to `implement`.
 | **gate** | A point where a human must approve before the next step. Removed only by evidence (README principle 7). |
 | **loop** | `implement` → `verify` (→ `review`) and back on `fail`. The pipeline caps the number of loops. |
 | **risk** | `low`, `medium` or `high`. Set by `plan`. Gates use it. |
+| **trailer** | A `Key: value` line at the end of a commit message. `implement` writes `Task: T-n` and `Plan: <blob SHA of plan.md>` on each task commit. A rerun skips a task that has a commit with both for the current plan. |
 | **evidence** | What backs a claim: a command with its result, a test name, or a `file:line`. |
 
 ## IDs
