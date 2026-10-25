@@ -80,7 +80,9 @@ Exactly one report per run, posted when the step ends.
 <step-specific body>
 ```
 
-- The first line is the marker. Extra keys are allowed (today `risk=` from `plan`; ADR-007 proposes `input=`).
+- The first line is the marker. Extra keys are allowed (today `risk=` from `plan`).
+- Every marker has `input=`: a hash or SHA of what the step read (ADR-007, open point 2). The runner passes
+  it in; a skill alone in a chat computes it with the same command.
 - `feature=` is left out only when no feature key exists yet (`prd`, new mode).
 - A step that reports on the PR also posts a one-line pointer on the PRD Issue, with no marker:
   `**<step>** · <verdict> · [report](<report URL>) on #<pr>`.
@@ -143,7 +145,7 @@ continues the old conversation.
    follow inline rules better? Measure with the eval suite (#10) before removing the copies.
 2. **Is `prd` a step under this interface,** or a separate human tool? It is interactive and writes
    the Issue body.
-3. **How ADR-007 fits:** the `input=` key and the `warn` verdict. Resume rules: section 11.
+3. **How ADR-007 fits:** the `warn` verdict. The `input=` key: section 5. Resume rules: section 11.
 4. **Machine-readable contract:** a schema for the marker and the writes table, so the runner can
    validate them, and so the step manifest (ADR-007) can reuse it.
 5. **Event granularity:** one report per step, or more events (Managed Agents logs every event; #13).

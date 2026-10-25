@@ -49,8 +49,9 @@ Option A.
 3. **A result counts only once it is in GitHub.** Push after each task commit. Post the report as soon
    as the step ends. A file in a temp dir is not an output.
 4. **A step reads its state only from GitHub,** never from the local checkout.
-5. **Skip:** the marker names the step's input, e.g. `step=verify input=<head sha>`. The runner skips a
-   step whose marker for the same input exists. `--force` runs it again.
+5. **Skip:** the marker names the step's input, e.g. `step=verify input=<head sha>`. The runner walks the
+   steps in order and runs the first one whose report is missing or stale (its `input=` is not the current
+   input), like a Kubernetes controller. `--force` runs a step again.
 6. **Resume:** a rerun continues from what GitHub shows. For `implement`: a task with a `T-n:` commit on
    the remote branch is done; an open PR for the branch is reused.
 7. **One step manifest,** shaped like a GitHub Actions job, so each step can become one Actions job later (#6):
@@ -84,9 +85,26 @@ These ideas are not robust yet. Each needs a closer look before the status becom
 1. **Resume or restart, per step.** Answered (2026-10-25): one rerun rule for all steps, see
    [ADR-005](005-step-interface.md) section 11. A step makes only the missing outputs; in practice only
    `implement` skips work, the other steps run again.
-2. **The input of each step.** What is the skip key: `spec` (Issue body and answers? `updatedAt`?),
-   `plan` (blob SHA of `spec.md`), `implement` (blob SHA of `plan.md`), `verify` / `review` (PR head SHA),
-   `check` (merge commit and smoke run)? What happens when a human edits the Issue later?
+2. **The input of each step.** Answered (2026-10-25): the input is a hash or SHA of exactly what the step reads.
+
+   | Step | `input=` |
+   |------|----------|
+   | `spec` | sha256 of the PRD Issue body, first 12 characters (the body holds the human's answers too; not `updatedAt`, which changes on every comment) |
+   | `plan` | blob SHA of `spec.md` on the remote feature branch |
+   | `implement`, first run | blob SHA of `plan.md` on the remote feature branch |
+   | `implement`, loop run | PR head SHA at the start of the run |
+   | `verify`, `review` | PR head SHA |
+   | `check` | merge commit SHA |
+
+   - The runner computes the input with fixed commands before the run and passes it to the skill; the skill
+     copies it into its marker. A skill alone in a chat runs the same command. A push during the run cannot
+     mislabel the report.
+   - Staleness follows the chain: a new `spec.md` makes `plan` stale; a push to the PR makes `verify` stale,
+     which is also the fail loop.
+   - The runner reruns a stale step on its own only inside the loop (`implement` ↔ `verify` / `review`).
+     A stale step before `implement` (a human edited the PRD or `spec.md`) stops the chain with a message,
+     e.g. "PRD changed after spec; run with `--force spec`". A new `plan.md` can renumber the tasks, so
+     resume in `implement` would skip the wrong work.
 3. **Detecting a finished task reliably.** Commit subject `T-n:` or a `Task: T-n` trailer? What if the
    commit exists but its tests now fail? Explicit commands, not the agent's judgement.
 4. **Where the manifest lives and its format.** In ai-hub or in the target repo? YAML or TOML?
